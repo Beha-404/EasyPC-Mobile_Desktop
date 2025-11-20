@@ -1,0 +1,18 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace EasyPC.Model.Requests.ProcessorRequests
+{
+    public class ProcessorInsertRequest
+    {
+        public required string Name { get; set; }
+        public required string Socket { get; set; }
+        public required int Price { get; set; }
+        public required int CoreCount { get; set; }
+        public required int ThreadCount { get; set; }
+        public required int ManufacturerId { get; set; }
+    }
+}
