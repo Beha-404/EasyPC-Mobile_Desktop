@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace EasyPC.Model;
 
-namespace EasyPC.Model
+public class Manufacturer
 {
-    public class Manufacturer
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = null!;
-        public string ComponentType { get; set; } = null!;
-    }
+    public int Id { get; set; }
+
+    public string Name { get; set; } = null!;
+
+    public string ComponentType { get; set; } = null!;
 }

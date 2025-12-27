@@ -1,8 +1,8 @@
-﻿namespace EasyPC.Model.SearchObjects
+﻿namespace EasyPC.Model.SearchObjects;
+
+public class OrderSearchObjects : BaseSearchObject
 {
-    public class OrderSearchObjects : BaseSearchObject
-    {
-        public int? UserId { get; set; }
-        public int? OrderId { get; set; }
-    }
+    public int? UserId { get; set; }
+
+    public int? OrderId { get; set; }
 }

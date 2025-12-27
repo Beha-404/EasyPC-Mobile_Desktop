@@ -1,24 +1,19 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using EasyPC.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
-using System.Text.Encodings.Web;
 using System.Security.Claims;
-using System.Linq;
-using EasyPC.Services.Interfaces;
+using System.Text.Encodings.Web;
 
 namespace EasyPC.API
 {
-    public class BasicAuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
+    public class BasicAuthenticationHandler(
+        IOptionsMonitor<AuthenticationSchemeOptions> options,
+        ILoggerFactory logger,
+        UrlEncoder encoder,
+        ISystemClock clock,
+        IUserService userService) : AuthenticationHandler<AuthenticationSchemeOptions>(options, logger, encoder, clock)
     {
-        private readonly IUserService _userService;
-        public BasicAuthenticationHandler(
-            IOptionsMonitor<AuthenticationSchemeOptions> options,
-            ILoggerFactory logger,
-            UrlEncoder encoder,
-            ISystemClock clock,
-            IUserService userService) : base(options, logger, encoder, clock)
-        {
-            _userService = userService;
-        }
+        private readonly IUserService _userService = userService;
 
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {

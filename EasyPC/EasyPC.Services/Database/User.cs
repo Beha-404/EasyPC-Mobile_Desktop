@@ -4,22 +4,39 @@ namespace EasyPC.Services.Database;
 
 public class User
 {
+    [Key]
     public int Id { get; set; }
-    public  string? Username { get; set; }
-    public  string? Password { get; set; }
-    public  byte[]? Hash { get; set; }
-    public  byte[]? Salt { get; set; }
+
+    public string? Username { get; set; }
+
+    public string? Password { get; set; }
+
+    public byte[]? Hash { get; set; }
+
+    public byte[]? Salt { get; set; }
+
     public string? FirstName { get; set; }
+
     public string? Email { get; set; }
+
     public string? LastName { get; set; }
+
     public string? City { get; set; }
+
     public string? State { get; set; }
+
     public string? Country { get; set; }
+
     public byte[]? profilePicture { get; set; }
+
     public string? PostalCode { get; set; }
+
     public string? Address { get; set; }
+
     public bool? IsDeleted { get; set; } = false;
+
     public UserRole Role { get; set; } = UserRole.User;
+
     public ICollection<Order> Orders { get; set; } = new List<Order>();
 }
 

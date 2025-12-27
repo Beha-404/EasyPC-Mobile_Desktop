@@ -1,9 +1,10 @@
-﻿namespace EasyPC.Model.SearchObjects
+﻿namespace EasyPC.Model.SearchObjects;
+
+public class RamSearchObject : BaseSearchObject
 {
-    public class RamSearchObject : BaseSearchObject
-    {
-        public  string? Name { get; set; }
-        public  int? Price { get; set; }
-        public  string? Speed { get; set; }
-    }
+    public string? Name { get; set; }
+
+    public int? Price { get; set; }
+
+    public string? Speed { get; set; }
 }

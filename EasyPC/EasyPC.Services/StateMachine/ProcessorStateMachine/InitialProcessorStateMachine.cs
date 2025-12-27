@@ -2,12 +2,6 @@
 using EasyPC.Services.Database;
 using MapsterMapper;
 
-namespace EasyPC.Services.StateMachine.ProcessorStateMachine
-{
-    public class InitialProcessorStateMachine : InitialStateMachine<Model.Processor, ProcessorInsertRequest, ProcessorUpdateRequest, Database.Processor>
-    {
-        public InitialProcessorStateMachine(DatabaseContext context, IMapper mapper, IServiceProvider serviceProvider) : base(context, mapper, serviceProvider)
-        {
-        }
-    }
-}
+namespace EasyPC.Services.StateMachine.ProcessorStateMachine;
+
+public class InitialProcessorStateMachine(DatabaseContext context, IMapper mapper, IServiceProvider serviceProvider) : InitialStateMachine<Model.Processor, ProcessorInsertRequest, ProcessorUpdateRequest, Processor>(context, mapper, serviceProvider) { }

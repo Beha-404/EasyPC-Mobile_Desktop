@@ -1,3 +1,4 @@
+using EasyNetQ;
 using EasyPC.API;
 using EasyPC.API.Data;
 using EasyPC.API.Hubs;
@@ -16,7 +17,6 @@ using Mapster;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
-using EasyNetQ;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -144,7 +144,7 @@ builder.Services.AddTransient<InitialPcStateMachine>();
 builder.Services.AddTransient<DraftPcStateMachine>();
 builder.Services.AddTransient<ActivePcStateMachine>();
 builder.Services.AddTransient<HiddenPcStateMachine>();
-builder.Services.AddTransient<BasePcStateMachine>();    
+builder.Services.AddTransient<BasePcStateMachine>();
 
 var app = builder.Build();
 
@@ -154,10 +154,10 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<DatabaseContext>();
-        
+
         // Apply migrations automatically
         await context.Database.MigrateAsync();
-        
+
         var seeder = new DataSeeder(context);
         await seeder.SeedAsync();
     }

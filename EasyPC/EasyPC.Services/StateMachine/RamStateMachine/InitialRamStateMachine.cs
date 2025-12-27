@@ -2,12 +2,6 @@
 using EasyPC.Services.Database;
 using MapsterMapper;
 
-namespace EasyPC.Services.StateMachine.RamStateMachine
-{
-    public class InitialRamStateMachine : InitialStateMachine<Model.Ram, RamInsertRequest, RamUpdateRequest, Database.Ram>
-    {
-        public InitialRamStateMachine(DatabaseContext context, IMapper mapper, IServiceProvider serviceProvider) : base(context, mapper, serviceProvider)
-        {
-        }
-    }
-}
+namespace EasyPC.Services.StateMachine.RamStateMachine;
+
+public class InitialRamStateMachine(DatabaseContext context, IMapper mapper, IServiceProvider serviceProvider) : InitialStateMachine<Model.Ram, RamInsertRequest, RamUpdateRequest, Ram>(context, mapper, serviceProvider) { }

@@ -6,41 +6,35 @@ using EasyPC.Services.StateMachine.MotherboardStateMachine;
 using MapsterMapper;
 using Microsoft.AspNetCore.Http;
 
-namespace EasyPC.Services
+namespace EasyPC.Services;
+
+public class MotherboardService(DatabaseContext context, IMapper mapper, BaseMotherboardStateMachine stateMachine, IHttpContextAccessor httpContextAccessor) : BaseService<Model.Motherboard, MotherboardSearchObject, MotherboardInsertRequest, MotherboardUpdateRequest, Motherboard, BaseMotherboardStateMachine>(context, mapper, stateMachine, httpContextAccessor), IMotherboardService
 {
-    public class MotherboardService : BaseService<Model.Motherboard, MotherboardSearchObject,MotherboardInsertRequest,MotherboardUpdateRequest, Database.Motherboard, BaseMotherboardStateMachine>,IMotherboardService
+    public override IQueryable<Motherboard> ApplyFilter(IQueryable<Motherboard> query, MotherboardSearchObject? searchObject)
     {
-        public MotherboardService(DatabaseContext context, IMapper mapper, BaseMotherboardStateMachine stateMachine, IHttpContextAccessor httpContextAccessor) 
-            : base(context, mapper, stateMachine, httpContextAccessor)
+        if (!string.IsNullOrEmpty(searchObject!.Name))
         {
+            query = query.Where(r => r.Name!.Contains(searchObject.Name));
+        }
+        if (!string.IsNullOrEmpty(searchObject!.Socket))
+        {
+            query = query.Where(r => r.Socket!.Contains(searchObject.Socket));
         }
 
-        public override IQueryable<Motherboard> ApplyFilter(IQueryable<Motherboard> query, MotherboardSearchObject? searchObject)
+        if (searchObject.Price.HasValue)
         {
-            if (!string.IsNullOrEmpty(searchObject!.Name))
-            {
-                query = query.Where(r => r.Name!.Contains(searchObject.Name));
-            }
-            if (!string.IsNullOrEmpty(searchObject!.Socket))
-            {
-                query = query.Where(r => r.Socket!.Contains(searchObject.Socket));
-            }
-
-            if (searchObject.Price.HasValue)
-            {
-                query = query.Where(r => r.Price == searchObject.Price);
-            }
-            if (searchObject.SupportsOverclocking.HasValue)
-            {
-                query = query.Where(r => r.SupportsOverclocking == searchObject.SupportsOverclocking);
-            }
-
-            if (!IsAdmin())
-            {
-                query = query.Where(x => x.StateMachine == StateNames.Active);
-            }
-
-            return query;
+            query = query.Where(r => r.Price == searchObject.Price);
         }
+        if (searchObject.SupportsOverclocking.HasValue)
+        {
+            query = query.Where(r => r.SupportsOverclocking == searchObject.SupportsOverclocking);
+        }
+
+        if (!IsAdmin())
+        {
+            query = query.Where(x => x.StateMachine == StateNames.Active);
+        }
+
+        return query;
     }
 }

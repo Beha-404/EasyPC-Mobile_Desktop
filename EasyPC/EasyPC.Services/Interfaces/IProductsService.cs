@@ -1,15 +1,8 @@
-using EasyPC.Model.Requests.RamRequests;
-using EasyPC.Model.SearchObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using EasyPC.Model;
 
-namespace EasyPC.Services.Interfaces
+namespace EasyPC.Services.Interfaces;
+
+public interface IProductsService
 {
-    public interface IProductsService
-    {
-       Task<Model.Products> GetAllProducts();
-    }
+    Task<Products> GetAllProducts();
 }

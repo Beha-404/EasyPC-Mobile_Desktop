@@ -3,12 +3,6 @@ using EasyPC.Services.Database;
 using MapsterMapper;
 
 
-namespace EasyPC.Services.StateMachine.PowerSupplyStateMachine
-{
-    public class InitialPowerSupplyStateMachine : InitialStateMachine<Model.PowerSupply, PowerSupplyInsertRequest, PowerSuplyUpdateRequest, Database.PowerSupply>
-    {
-        public InitialPowerSupplyStateMachine(DatabaseContext context, IMapper mapper, IServiceProvider serviceProvider) : base(context, mapper, serviceProvider)
-        {
-        }
-    }
-}
+namespace EasyPC.Services.StateMachine.PowerSupplyStateMachine;
+
+public class InitialPowerSupplyStateMachine(DatabaseContext context, IMapper mapper, IServiceProvider serviceProvider) : InitialStateMachine<Model.PowerSupply, PowerSupplyInsertRequest, PowerSuplyUpdateRequest, PowerSupply>(context, mapper, serviceProvider) { }

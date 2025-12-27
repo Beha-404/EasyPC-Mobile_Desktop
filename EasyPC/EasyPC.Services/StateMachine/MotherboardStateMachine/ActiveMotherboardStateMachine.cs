@@ -2,12 +2,6 @@
 using EasyPC.Services.Database;
 using MapsterMapper;
 
-namespace EasyPC.Services.StateMachine.MotherboardStateMachine
-{
-    public class ActiveMotherboardStateMachine : ActiveMachineState<Model.Motherboard, MotherboardInsertRequest, MotherboardUpdateRequest, Database.Motherboard>
-    {
-        public ActiveMotherboardStateMachine(DatabaseContext context, IMapper mapper, IServiceProvider serviceProvider) : base(context, mapper, serviceProvider)
-        {
-        }
-    }
-}
+namespace EasyPC.Services.StateMachine.MotherboardStateMachine;
+
+public class ActiveMotherboardStateMachine(DatabaseContext context, IMapper mapper, IServiceProvider serviceProvider) : ActiveMachineState<Model.Motherboard, MotherboardInsertRequest, MotherboardUpdateRequest, Motherboard>(context, mapper, serviceProvider) { }
