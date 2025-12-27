@@ -6,37 +6,31 @@ using EasyPC.Services.StateMachine.RamStateMachine;
 using MapsterMapper;
 using Microsoft.AspNetCore.Http;
 
-namespace EasyPC.Services
+namespace EasyPC.Services;
+
+public class RamService(DatabaseContext context, IMapper mapper, BaseRamStateMachine stateMachine, IHttpContextAccessor httpContextAccessor) : BaseService<Model.Ram, RamSearchObject, RamInsertRequest, RamUpdateRequest, Ram, BaseRamStateMachine>(context, mapper, stateMachine, httpContextAccessor), IRamService
 {
-    public class RamService : BaseService<Model.Ram,RamSearchObject, RamInsertRequest,RamUpdateRequest, Database.Ram, BaseRamStateMachine>,IRamService
+    public override IQueryable<Ram> ApplyFilter(IQueryable<Ram> query, RamSearchObject? searchObject)
     {
-        public RamService(DatabaseContext context, IMapper mapper, BaseRamStateMachine stateMachine, IHttpContextAccessor httpContextAccessor) 
-            : base(context, mapper, stateMachine, httpContextAccessor)
+        if (!string.IsNullOrEmpty(searchObject!.Name))
         {
+            query = query.Where(r => r.Name!.Contains(searchObject.Name));
+        }
+        if (!string.IsNullOrEmpty(searchObject!.Speed))
+        {
+            query = query.Where(r => r.Speed!.Contains(searchObject.Speed));
         }
 
-        public override IQueryable<Ram> ApplyFilter(IQueryable<Ram> query, RamSearchObject? searchObject)
+        if (searchObject.Price.HasValue)
         {
-            if (!string.IsNullOrEmpty(searchObject!.Name))
-            {
-                query = query.Where(r => r.Name!.Contains(searchObject.Name));
-            }
-            if (!string.IsNullOrEmpty(searchObject!.Speed))
-            {
-                query = query.Where(r => r.Speed!.Contains(searchObject.Speed));
-            }
-
-            if (searchObject.Price.HasValue)
-            {
-                query = query.Where(r => r.Price == searchObject.Price);
-            }
-
-            if (!IsAdmin())
-            {
-                query = query.Where(x => x.StateMachine == StateNames.Active);
-            }
-
-            return query;
+            query = query.Where(r => r.Price == searchObject.Price);
         }
+
+        if (!IsAdmin())
+        {
+            query = query.Where(x => x.StateMachine == StateNames.Active);
+        }
+
+        return query;
     }
 }

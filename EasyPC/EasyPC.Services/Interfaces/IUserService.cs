@@ -1,17 +1,17 @@
-﻿using EasyPC.Model.Requests.UserRequests;
+﻿using EasyPC.Model;
+using EasyPC.Model.Requests.UserRequests;
 using EasyPC.Model.SearchObjects;
 
-namespace EasyPC.Services.Interfaces
+namespace EasyPC.Services.Interfaces;
+
+public interface IUserService
 {
-    public interface IUserService
-    {
-        public Model.User? Login(string username, string password);
-        public Model.User? Register(string username, string email, string password);
-        public Model.User? Delete(int id);
-        public Model.User? Restore(int id);
-        public Model.User? Update(int id, UserUpdateRequest updateRequest);
-        public Model.User? UpdateRole(UpdateRoleRequest updateRoleRequest);
-        public Model.PagedResult<Model.User>? Get(UserSearchObject? userSearchObject);
-        public Model.User? GetUserById(int id);
-    }
+    public User? Login(string username, string password);
+    public User? Register(string username, string email, string password);
+    public User? Delete(int id);
+    public User? Restore(int id);
+    public User? Update(int id, UserUpdateRequest updateRequest);
+    public User? UpdateRole(UpdateRoleRequest updateRoleRequest);
+    public PagedResult<User>? Get(UserSearchObject? userSearchObject);
+    public User? GetUserById(int id);
 }

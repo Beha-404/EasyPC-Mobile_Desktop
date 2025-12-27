@@ -4,10 +4,5 @@ using MapsterMapper;
 
 namespace EasyPC.Services.StateMachine.ProcessorStateMachine
 {
-    public class DraftProcessorStateMachine : DraftMachineState<Model.Processor, ProcessorInsertRequest, ProcessorUpdateRequest, Database.Processor>
-    {
-        public DraftProcessorStateMachine(DatabaseContext context, IMapper mapper, IServiceProvider serviceProvider) : base(context, mapper, serviceProvider)
-        {
-        }
-    }
+    public class DraftProcessorStateMachine(DatabaseContext context, IMapper mapper, IServiceProvider serviceProvider) : DraftMachineState<Model.Processor, ProcessorInsertRequest, ProcessorUpdateRequest, Processor>(context, mapper, serviceProvider) { }
 }

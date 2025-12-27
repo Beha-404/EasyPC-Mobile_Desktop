@@ -3,24 +3,19 @@ using EasyPC.Services.Database;
 using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace EasyPC.Services.StateMachine.PcStateMachine
-{
-    public class BasePcStateMachine : BaseStateMachine<Model.PC, PcInsertRequest, PcUpdateRequest, Database.PC>
-    {
-        public BasePcStateMachine(DatabaseContext context, IMapper mapper, IServiceProvider serviceProvider) : base(context, mapper, serviceProvider)
-        {
-        }
+namespace EasyPC.Services.StateMachine.PcStateMachine;
 
-        public override IBaseStateMachine<Model.PC, PcInsertRequest, PcUpdateRequest, Database.PC> NextState(string state)
+public class BasePcStateMachine(DatabaseContext context, IMapper mapper, IServiceProvider serviceProvider) : BaseStateMachine<Model.PC, PcInsertRequest, PcUpdateRequest, PC>(context, mapper, serviceProvider)
+{
+    public override IBaseStateMachine<Model.PC, PcInsertRequest, PcUpdateRequest, PC> NextState(string state)
+    {
+        return state switch
         {
-            return state switch
-            {
-                "initial" => _serviceProvider.GetRequiredService<InitialPcStateMachine>(),
-                "draft" => _serviceProvider.GetRequiredService<DraftPcStateMachine>(),
-                "active" => _serviceProvider.GetRequiredService<ActivePcStateMachine>(),
-                "hidden" => _serviceProvider.GetRequiredService<HiddenPcStateMachine>(),
-                _ => throw new NotImplementedException(),
-            };
-        }
+            "initial" => _serviceProvider.GetRequiredService<InitialPcStateMachine>(),
+            "draft" => _serviceProvider.GetRequiredService<DraftPcStateMachine>(),
+            "active" => _serviceProvider.GetRequiredService<ActivePcStateMachine>(),
+            "hidden" => _serviceProvider.GetRequiredService<HiddenPcStateMachine>(),
+            _ => throw new NotImplementedException(),
+        };
     }
 }

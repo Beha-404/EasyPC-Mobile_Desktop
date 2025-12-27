@@ -6,37 +6,31 @@ using EasyPC.Services.StateMachine.GraphicsCard;
 using MapsterMapper;
 using Microsoft.AspNetCore.Http;
 
-namespace EasyPC.Services
+namespace EasyPC.Services;
+
+public class GraphicsCardService(DatabaseContext context, IMapper mapper, BaseGraphicsCardStateMachine stateMachine, IHttpContextAccessor httpContextAccessor) : BaseService<Model.GraphicsCard, GraphicsCardSearchObject, GraphicsCardInsertRequest, GraphicsCardUpdateRequest, GraphicsCard, BaseGraphicsCardStateMachine>(context, mapper, stateMachine, httpContextAccessor), IGraphicsCardService
 {
-    public class GraphicsCardService : BaseService<Model.GraphicsCard,GraphicsCardSearchObject ,GraphicsCardInsertRequest, GraphicsCardUpdateRequest, Database.GraphicsCard,BaseGraphicsCardStateMachine>, IGraphicsCardService
+    public override IQueryable<GraphicsCard> ApplyFilter(IQueryable<GraphicsCard> query, GraphicsCardSearchObject? searchObject)
     {
-        public GraphicsCardService(DatabaseContext context, IMapper mapper, BaseGraphicsCardStateMachine stateMachine, IHttpContextAccessor httpContextAccessor) 
-            : base(context, mapper, stateMachine, httpContextAccessor)
+        if (!string.IsNullOrEmpty(searchObject!.Name))
         {
+            query = query.Where(r => r.Name!.Contains(searchObject.Name));
+        }
+        if (!string.IsNullOrEmpty(searchObject!.VRAM))
+        {
+            query = query.Where(r => r.VRAM!.Contains(searchObject.VRAM));
         }
 
-        public override IQueryable<GraphicsCard> ApplyFilter(IQueryable<GraphicsCard> query, GraphicsCardSearchObject? searchObject)
+        if (searchObject.Price.HasValue)
         {
-            if (!string.IsNullOrEmpty(searchObject!.Name))
-            {
-                query = query.Where(r => r.Name!.Contains(searchObject.Name));
-            }
-            if (!string.IsNullOrEmpty(searchObject!.VRAM))
-            {
-                query = query.Where(r => r.VRAM!.Contains(searchObject.VRAM));
-            }
-
-            if (searchObject.Price.HasValue)
-            {
-                query = query.Where(r => r.Price == searchObject.Price);
-            }
-
-            if (!IsAdmin())
-            {
-                query = query.Where(x => x.StateMachine == StateNames.Active);
-            }
-
-            return query;
+            query = query.Where(r => r.Price == searchObject.Price);
         }
+
+        if (!IsAdmin())
+        {
+            query = query.Where(x => x.StateMachine == StateNames.Active);
+        }
+
+        return query;
     }
 }

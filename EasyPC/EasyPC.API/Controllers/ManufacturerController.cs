@@ -5,56 +5,50 @@ using EasyPC.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EasyPC.API.Controllers
+namespace EasyPC.API.Controllers;
+
+[Authorize]
+[ApiController]
+[Route("api/[controller]")]
+public class ManufacturerController(IManufacturerService service) : ControllerBase
 {
-    [Authorize]
-    [ApiController]
-    [Route("api/[controller]")]
-    public class ManufacturerController : ControllerBase
+    private readonly IManufacturerService _service = service;
+
+    [AllowAnonymous]
+    [HttpGet("get")]
+    public PagedResult<Manufacturer> GetAll([FromQuery] ManufacturerSearchObjects search)
     {
-        private readonly IManufacturerService _service;
+        return _service.GetAll(search);
+    }
 
-        public ManufacturerController(IManufacturerService service)
-        {
-            _service = service;
-        }
+    [AllowAnonymous]
+    [HttpGet("get/{id}")]
+    public Manufacturer? GetById(int id)
+    {
+        return _service.GetById(id);
+    }
 
-        [AllowAnonymous]
-        [HttpGet("get")]
-        public PagedResult<Manufacturer> GetAll([FromQuery] ManufacturerSearchObjects search)
+    [Authorize(Roles = "Admin,SuperAdmin")]
+    [HttpPost("insert")]
+    public IActionResult Insert([FromBody] ManufacturerInsertRequest insertRequest)
+    {
+        if (!ModelState.IsValid)
         {
-            return _service.GetAll(search);
+            return BadRequest(ModelState);
         }
+        var result = _service.Insert(insertRequest);
+        return Ok(result);
+    }
 
-        [AllowAnonymous]
-        [HttpGet("get/{id}")]
-        public Manufacturer? GetById(int id)
+    [Authorize(Roles = "Admin,SuperAdmin")]
+    [HttpPut("update/{id}")]
+    public IActionResult Update(int id, [FromBody] ManufacturerUpdateRequest updateRequest)
+    {
+        if (!ModelState.IsValid)
         {
-            return _service.GetById(id);
+            return BadRequest(ModelState);
         }
-
-        [Authorize(Roles = "Admin,SuperAdmin")]
-        [HttpPost("insert")]
-        public IActionResult Insert([FromBody] ManufacturerInsertRequest insertRequest)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            var result = _service.Insert(insertRequest);
-            return Ok(result);
-        }
-
-        [Authorize(Roles = "Admin,SuperAdmin")]
-        [HttpPut("update/{id}")]
-        public IActionResult Update(int id, [FromBody] ManufacturerUpdateRequest updateRequest)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            var result = _service.Update(id, updateRequest);
-            return Ok(result);
-        }
+        var result = _service.Update(id, updateRequest);
+        return Ok(result);
     }
 }

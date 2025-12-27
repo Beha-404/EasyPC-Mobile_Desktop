@@ -1,9 +1,10 @@
-﻿namespace EasyPC.Model.Requests.OrderRequests
+﻿namespace EasyPC.Model.Requests.OrderRequests;
+
+public class OrderInsertRequest
 {
-    public class OrderInsertRequest
-    {
-        public string? PaymentMethod { get; set; }
-        public int UserId { get; set; }
-        public List<OrderDetailsInsertRequest> OrderDetails { get; set; } = new();
-    }
+    public string? PaymentMethod { get; set; }
+
+    public int UserId { get; set; }
+
+    public List<OrderDetailsInsertRequest> OrderDetails { get; set; } = new();
 }

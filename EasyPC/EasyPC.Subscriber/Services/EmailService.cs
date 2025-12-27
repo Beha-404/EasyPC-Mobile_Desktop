@@ -1,43 +1,38 @@
+using EasyPC.Model.Messages;
+using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.Net.Mail;
 using System.Text;
-using EasyPC.Model.Messages;
-using Microsoft.Extensions.Configuration;
 
 namespace EasyPC.Subscriber.Services
 {
-    public class EmailService
+    public class EmailService(IConfiguration configuration)
     {
-        private readonly IConfiguration _configuration;
-
-        public EmailService(IConfiguration configuration)
-        {
-            _configuration = configuration;
-        }
+        private readonly IConfiguration _configuration = configuration;
 
         public async Task SendOrderConfirmationEmail(OrderEmailMessage orderMessage)
         {
-            var smtpServer = _configuration["Email:SmtpServer"] 
-                ?? Environment.GetEnvironmentVariable("SMTP_SERVER") 
+            var smtpServer = _configuration["Email:SmtpServer"]
+                ?? Environment.GetEnvironmentVariable("SMTP_SERVER")
                 ?? "smtp.gmail.com";
-                
-            var smtpPort = int.Parse(_configuration["Email:SmtpPort"] 
-                ?? Environment.GetEnvironmentVariable("SMTP_PORT") 
+
+            var smtpPort = int.Parse(_configuration["Email:SmtpPort"]
+                ?? Environment.GetEnvironmentVariable("SMTP_PORT")
                 ?? "587");
-                
-            var senderEmail = _configuration["Email:SenderEmail"] 
-                ?? Environment.GetEnvironmentVariable("SMTP_USERNAME") 
+
+            var senderEmail = _configuration["Email:SenderEmail"]
+                ?? Environment.GetEnvironmentVariable("SMTP_USERNAME")
                 ?? "noreply@easypc.com";
-                
-            var senderName = _configuration["Email:SenderName"] 
+
+            var senderName = _configuration["Email:SenderName"]
                 ?? "EasyPC Support";
-                
-            var senderPassword = _configuration["Email:SenderPassword"] 
-                ?? Environment.GetEnvironmentVariable("SMTP_PASSWORD") 
+
+            var senderPassword = _configuration["Email:SenderPassword"]
+                ?? Environment.GetEnvironmentVariable("SMTP_PASSWORD")
                 ?? throw new InvalidOperationException("SMTP password not configured");
-                
-            var enableSsl = bool.Parse(_configuration["Email:EnableSsl"] 
-                ?? Environment.GetEnvironmentVariable("SMTP_ENABLE_SSL") 
+
+            var enableSsl = bool.Parse(_configuration["Email:EnableSsl"]
+                ?? Environment.GetEnvironmentVariable("SMTP_ENABLE_SSL")
                 ?? "true");
 
             var mailMessage = new MailMessage

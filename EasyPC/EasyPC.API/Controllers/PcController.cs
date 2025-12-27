@@ -1,36 +1,32 @@
+using EasyPC.Model;
 using EasyPC.Model.Requests.PcRequests;
 using EasyPC.Model.SearchObjects;
 using EasyPC.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace EasyPC.API.Controllers
+namespace EasyPC.API.Controllers;
+
+public class PcController(IPcService service) : BaseController<PC, PcSearchObject, PcInsertRequest, PcUpdateRequest>(service)
 {
-    public class PcController : BaseController<Model.PC, PcSearchObject,PcInsertRequest,PcUpdateRequest>
+    private readonly IPcService _service = service;
+
+    [AllowAnonymous]
+    [HttpGet("{id}/recommend")]
+    public List<PC> Recommend(int id)
     {
-        private readonly IPcService _service;
-        public PcController(IPcService service) : base(service)
-        {
-            _service = service;
-        }
+        return _service.Recommend(id);
+    }
 
-        [AllowAnonymous]
-        [HttpGet("{id}/recommend")]
-        public List<Model.PC> Recommend(int id)
+    [Authorize]
+    [HttpPost("insert-custom")]
+    public IActionResult InsertCustomPc([FromBody] PcInsertRequest insertRequest)
+    {
+        if (!ModelState.IsValid)
         {
-            return _service.Recommend(id);
+            return BadRequest(ModelState);
         }
-
-        [Authorize]
-        [HttpPost("insert-custom")]
-        public IActionResult InsertCustomPc([FromBody]PcInsertRequest insertRequest)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            var result = _service.Insert(insertRequest);
-            return Ok(result);
-        }
+        var result = _service.Insert(insertRequest);
+        return Ok(result);
     }
 }

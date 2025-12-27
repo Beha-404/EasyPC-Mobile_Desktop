@@ -1,17 +1,22 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace EasyPC.Services.Database
+namespace EasyPC.Services.Database;
+
+public class OrderDetails
 {
-    public class OrderDetails
-    {
-        public int Id { get; set; }
-        public int Quantity { get; set; }
-        public int UnitPrice { get; set; }
-        public int PcId { get; set; }
-        [ForeignKey(nameof(PcId))]
-        public PC? Pc { get; set; }
-        public int OrderId { get; set; }
-        [ForeignKey(nameof(OrderId))]
-        public Order? Order { get; set; }
-    }
+    [Key]
+    public int Id { get; set; }
+
+    public int Quantity { get; set; }
+
+    public int UnitPrice { get; set; }
+
+    [ForeignKey(nameof(PcId))]
+    public int PcId { get; set; }
+    public PC? Pc { get; set; }
+
+    [ForeignKey(nameof(OrderId))]
+    public int OrderId { get; set; }
+    public Order? Order { get; set; }
 }
