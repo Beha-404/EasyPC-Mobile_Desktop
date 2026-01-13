@@ -30,6 +30,8 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
 
     public DbSet<SupportMessage> SupportMessages { get; set; }
 
+    public DbSet<Wishlist> Wishlists { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -92,6 +94,22 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
 
             entity.Property(sm => sm.Timestamp)
                   .HasDefaultValueSql("GETUTCDATE()");
+        });
+
+        modelBuilder.Entity<Wishlist>(entity =>
+        {
+            entity.HasIndex(w => new { w.UserId, w.PcId })
+                  .IsUnique();
+
+            entity.HasOne(w => w.PC)
+                  .WithMany()
+                  .HasForeignKey(w => w.PcId)
+                  .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(w => w.User)
+                  .WithMany()
+                  .HasForeignKey(w => w.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

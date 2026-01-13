@@ -1,4 +1,5 @@
 ﻿using EasyNetQ;
+using EasyPC.Model;
 using EasyPC.Model.Messages;
 using EasyPC.Model.Requests.OrderRequests;
 using EasyPC.Model.SearchObjects;
@@ -28,6 +29,7 @@ public class OrderService(DatabaseContext context, IMapper mapper, IBus bus) : I
     public Model.PagedResult<Model.Order> Get(OrderSearchObjects searchObject)
     {
         var query = _context.Orders
+            .Include(o => o.User)
             .Include(o => o.OrderDetails)
                 .ThenInclude(od => od.Pc)
                     .ThenInclude(pc => pc!.Processor)
@@ -88,6 +90,7 @@ public class OrderService(DatabaseContext context, IMapper mapper, IBus bus) : I
     public Model.Order? GetById(int id)
     {
         var entity = _context.Orders
+           .Include(o => o.User)
            .Include(o => o.OrderDetails)
                .ThenInclude(od => od.Pc)
                    .ThenInclude(pc => pc!.Processor)
@@ -119,17 +122,20 @@ public class OrderService(DatabaseContext context, IMapper mapper, IBus bus) : I
         if (insert == null)
             return null;
 
-        var order = new Order
+        var order = new EasyPC.Services.Database.Order
         {
             OrderDate = DateTime.Now,
             PaymentMethod = insert.PaymentMethod,
+            PaymentStatus = insert.PaymentStatus ?? "Pending",
+            PayPalOrderId = insert.PayPalOrderId,
+            StripePaymentIntentId = insert.StripePaymentIntentId,
             UserId = insert.UserId,
             TotalPrice = insert.OrderDetails.Sum(od => od.Quantity * od.UnitPrice)
         };
 
         foreach (var orderDetailsRequest in insert.OrderDetails)
         {
-            var orderDetails = new OrderDetails
+            var orderDetails = new EasyPC.Services.Database.OrderDetails
             {
                 PcId = orderDetailsRequest.PcId,
                 Quantity = orderDetailsRequest.Quantity,

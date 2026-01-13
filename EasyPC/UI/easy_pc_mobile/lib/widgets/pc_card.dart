@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'package:easy_pc/models/pc.dart';
+import 'package:easy_pc/providers/user_provider.dart';
+import 'package:easy_pc/providers/wishlist_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 const yellow = Color(0xFFDDC03D);
 
@@ -18,6 +21,11 @@ class PcCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
+    final wishlistProvider = Provider.of<WishlistProvider>(context);
+    final isLoggedIn = userProvider.user != null;
+    final isInWishlist = pc.id != null && wishlistProvider.isInWishlist(pc.id!);
+
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF2B2B2B),
@@ -65,6 +73,16 @@ class PcCard extends StatelessWidget {
               ],
             ),
           ),
+          // Wishlist heart button
+          if (isLoggedIn && pc.id != null)
+            Positioned(
+              top: 8,
+              right: 8,
+              child: _WishlistButton(
+                pc: pc,
+                isInWishlist: isInWishlist,
+              ),
+            ),
         ],
       ),
     );
@@ -158,4 +176,112 @@ class PcCard extends StatelessWidget {
     );
   }
 
+}
+
+class _WishlistButton extends StatefulWidget {
+  final PC pc;
+  final bool isInWishlist;
+
+  const _WishlistButton({
+    required this.pc,
+    required this.isInWishlist,
+  });
+
+  @override
+  State<_WishlistButton> createState() => _WishlistButtonState();
+}
+
+class _WishlistButtonState extends State<_WishlistButton> {
+  bool _isLoading = false;
+
+  Future<void> _toggleWishlist() async {
+    if (_isLoading) return;
+    
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final wishlistProvider = Provider.of<WishlistProvider>(context, listen: false);
+    
+    if (userProvider.user == null || widget.pc.id == null) return;
+    
+    setState(() => _isLoading = true);
+    
+    final username = userProvider.user?.username ?? '';
+    final password = userProvider.password ?? '';
+    final headers = {
+      'Authorization': 'Basic ${base64Encode(utf8.encode('$username:$password'))}',
+    };
+    
+    final wasInWishlist = wishlistProvider.isInWishlist(widget.pc.id!);
+    
+    final result = await wishlistProvider.toggleWishlist(
+      userProvider.user!.id!,
+      widget.pc.id!,
+      headers: headers,
+    );
+    
+    if (mounted) {
+      setState(() => _isLoading = false);
+      
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(
+                result 
+                    ? (wasInWishlist ? Icons.heart_broken : Icons.favorite) 
+                    : Icons.error,
+                color: Colors.white,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  result 
+                      ? (wasInWishlist ? 'Removed from wishlist' : 'Added to wishlist')
+                      : 'Failed to update wishlist',
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: result ? (wasInWishlist ? Colors.grey[850] : Colors.red) : Colors.grey[850],
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final wishlistProvider = Provider.of<WishlistProvider>(context);
+    final isInWishlist = widget.pc.id != null && wishlistProvider.isInWishlist(widget.pc.id!);
+    
+    return GestureDetector(
+      onTap: _toggleWishlist,
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.5),
+          shape: BoxShape.circle,
+        ),
+        child: _isLoading
+            ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
+              )
+            : Icon(
+                isInWishlist ? Icons.favorite : Icons.favorite_border,
+                color: isInWishlist ? Colors.red : Colors.white,
+                size: 20,
+              ),
+      ),
+    );
+  }
 }

@@ -1,6 +1,5 @@
 import 'package:easy_pc/models/build_wizard_state.dart';
 import 'package:easy_pc/models/build_wizard_step.dart';
-import 'package:easy_pc/models/pc_type.dart';
 import 'package:easy_pc/services/build_wizard_service.dart';
 import 'package:easy_pc/services/pc_type_service.dart';
 import 'package:easy_pc/widgets/compatibility_card.dart';

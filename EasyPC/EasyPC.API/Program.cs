@@ -99,6 +99,7 @@ builder.Services.AddTransient<IProductsService, ProductsService>();
 builder.Services.AddTransient<IPcService, PcService>();
 builder.Services.AddTransient<IOrderService, OrderService>();
 builder.Services.AddTransient<IRatingService, RatingService>();
+builder.Services.AddTransient<IWishlistService, WishlistService>();
 
 // New services for Build Wizard and Compatibility Checker
 builder.Services.AddScoped<CompatibilityService>();

@@ -2,7 +2,9 @@ import 'package:easy_pc/models/pc.dart';
 import 'package:easy_pc/models/user.dart';
 import 'package:easy_pc/pages/order_history_page.dart';
 import 'package:easy_pc/pages/support_page.dart';
+import 'package:easy_pc/pages/wishlist_page.dart';
 import 'package:easy_pc/providers/user_provider.dart';
+import 'package:easy_pc/providers/wishlist_provider.dart';
 import 'package:easy_pc/services/pc_service.dart';
 import 'package:easy_pc/widgets/dialog/filter_dialog.dart';
 import 'package:easy_pc/widgets/pc_card.dart';
@@ -16,7 +18,7 @@ import 'package:provider/provider.dart';
 import 'package:easy_pc/providers/cart_provider.dart';
 import 'package:easy_pc/pages/cart_page.dart';
 
-enum _MenuAction { editProfile, orderHistory, support, logout }
+enum _MenuAction { editProfile, orderHistory, wishlist, support, logout }
 
 const yellow = Color(0xFFDDC03D);
 
@@ -35,6 +37,7 @@ class _HomePageState extends State<HomePage> {
   bool _loading = false;
   Map<String, dynamic>? _currentFilters;
   final _pageController = TextEditingController();
+  final _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -55,6 +58,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void dispose() {
     _pageController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -194,6 +198,10 @@ class _HomePageState extends State<HomePage> {
             child: Text('Order History'),
           ),
           const PopupMenuItem(
+            value: _MenuAction.wishlist,
+            child: Text('Wishlist'),
+          ),
+          const PopupMenuItem(
             value: _MenuAction.support,
             child: Text('Support'),
           ),
@@ -222,6 +230,8 @@ class _HomePageState extends State<HomePage> {
         }
         break;
       case _MenuAction.logout:
+        final wishlistProvider = Provider.of<WishlistProvider>(context, listen: false);
+        wishlistProvider.clearWishlist();
         await userProvider.clearUser();
         if (!mounted) return;
         _snack('Logged out');
@@ -233,6 +243,12 @@ class _HomePageState extends State<HomePage> {
         ).then((_) {
           _loadPcs();
         });
+        break;
+      case _MenuAction.wishlist:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const WishlistPage()),
+        );
         break;
       case _MenuAction.support:
         Navigator.push(
@@ -250,7 +266,7 @@ class _HomePageState extends State<HomePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const HeroHeader(),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
           const Padding(
             padding: EdgeInsets.only(left: 4, bottom: 12),
             child: Text(
@@ -369,6 +385,13 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildBottomNav() {
+
+     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollToCurrentPage();
+      }
+    });
+
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -385,16 +408,22 @@ class _HomePageState extends State<HomePage> {
         ),
         child: Row(
           children: [
-            IconButton(
-              onPressed: _currentPage > 1
-                  ? () => _changePage(_currentPage - 1)
-                  : null,
-              icon: const Icon(Icons.chevron_left),
-              color: _currentPage > 1 ? yellow : Colors.grey,
+            SizedBox(
+              width: 32,
+              height: 32,
+              child: IconButton(
+                onPressed: _currentPage > 1
+                    ? () => _changePage(_currentPage - 1)
+                    : null,
+                icon: const Icon(Icons.chevron_left, size: 20),
+                color: _currentPage > 1 ? yellow : Colors.grey,
+                padding: EdgeInsets.zero,
+              ),
             ),
 
             Expanded(
               child: SingleChildScrollView(
+                controller: _scrollController,
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -403,12 +432,17 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             
-            IconButton(
-              onPressed: _currentPage < _totalPages
-                  ? () => _changePage(_currentPage + 1)
-                  : null,
-              icon: const Icon(Icons.chevron_right),
-              color: _currentPage < _totalPages ? yellow : Colors.grey,
+            SizedBox(
+              width: 32,
+              height: 32,
+              child: IconButton(
+                onPressed: _currentPage < _totalPages
+                    ? () => _changePage(_currentPage + 1)
+                    : null,
+                icon: const Icon(Icons.chevron_right, size: 20),
+                color: _currentPage < _totalPages ? yellow : Colors.grey,
+                padding: EdgeInsets.zero,
+              ),
             ),
 
             const SizedBox(width: 8),
@@ -418,6 +452,25 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  void _scrollToCurrentPage() {
+    if (!_scrollController.hasClients) return;
+    
+    const double buttonWidth = 50.0;
+    double position = (_currentPage - 1) * buttonWidth;
+    final double viewportWidth = _scrollController.position.viewportDimension;
+    final double targetScroll = position - (viewportWidth / 2) + (buttonWidth / 2);
+    
+    _scrollController.animateTo(
+      targetScroll.clamp(
+        _scrollController.position.minScrollExtent,
+        _scrollController.position.maxScrollExtent,
+      ),
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
+  }
+
 
   List<Widget> _buildPageNumbers() {
     List<Widget> pages = [];
@@ -467,7 +520,7 @@ class _HomePageState extends State<HomePage> {
         '...',
         style: TextStyle(
           color: Colors.white70,
-          fontSize: 16,
+          fontSize: 20,
           fontWeight: FontWeight.bold,
         ),
       ),
@@ -485,7 +538,7 @@ class _HomePageState extends State<HomePage> {
           ),
           foregroundColor: pageNum == _currentPage ? yellow : Colors.white70,
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          minimumSize: const Size(36, 36),
+          minimumSize: const Size(16, 16),
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
         child: Text('$pageNum'),
@@ -495,7 +548,7 @@ class _HomePageState extends State<HomePage> {
 
  Widget _filterButton() {
   return ConstrainedBox(
-    constraints: const BoxConstraints(maxWidth: 170),
+    constraints: const BoxConstraints(maxWidth: 150),
     child: ElevatedButton(
       onPressed: _showFilterDialog,
       style: ElevatedButton.styleFrom(

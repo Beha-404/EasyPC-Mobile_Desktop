@@ -1,4 +1,4 @@
-﻿namespace EasyPC.Model.Requests.OrderDetailsRequests;
+namespace EasyPC.Model.Requests.OrderRequests;
 
 public class OrderDetailsInsertRequest
 {

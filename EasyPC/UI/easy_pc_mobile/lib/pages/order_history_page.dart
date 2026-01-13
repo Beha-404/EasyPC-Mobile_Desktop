@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:easy_pc/models/order.dart';
 import 'package:easy_pc/providers/user_provider.dart';
 import 'package:easy_pc/services/order_service.dart';
@@ -19,7 +20,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
   List<Order> _orders = [];
   bool _loading = false;
   int _currentPage = 1;
-  final int _pageSize = 5;
+  final int _pageSize = 3;
 
   @override
   void initState() {
@@ -60,7 +61,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
         page: _currentPage,
         pageSize: _pageSize,
       );
-      
+
       if (mounted) {
         setState(() {
           _orders = orders;
@@ -150,7 +151,7 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
 
   Widget _buildPagination() {
     final hasNextPage = _orders.length == _pageSize;
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
@@ -281,9 +282,12 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                                     color: Colors.white12,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: const Icon(
-                                    Icons.computer,
-                                    color: Colors.white38,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: _buildPcImage(
+                                      detail.pc?.picture,
+                                      38,
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 12),
@@ -369,7 +373,32 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
     );
   }
 
+  Widget _buildPcImage(String? picture, double iconSize) {
+    if (picture == null || picture.isEmpty) {
+      return Center(
+        child: Icon(Icons.computer, color: Colors.white38, size: iconSize),
+      );
+    }
+    try {
+      final bytes = base64Decode(picture);
+      return Image.memory(
+        bytes,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+        errorBuilder: (context, error, stackTrace) => Center(
+          child: Icon(Icons.computer, color: Colors.white38, size: iconSize),
+        ),
+      );
+    } catch (e) {
+      return Center(
+        child: Icon(Icons.computer, color: Colors.white38, size: iconSize),
+      );
+    }
+  }
+
   void _showOrderDetails(Order order) {
+    final parentContext = context; // Save reference to parent context
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF2A2A2A),
@@ -424,11 +453,19 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                         onTap: () {
                           if (detail.pc != null) {
                             Navigator.pop(context);
-                            PcDetailsDialog.show(
-                              context,
-                              detail.pc!,
-                              showRateButton: true,
-                              onRatingSubmitted: _loadOrders,
+                            // Use parent context to show dialog after bottom sheet is closed
+                            Future.delayed(
+                              const Duration(milliseconds: 100),
+                              () {
+                                if (mounted) {
+                                  PcDetailsDialog.show(
+                                    parentContext,
+                                    detail.pc!,
+                                    showRateButton: true,
+                                    onRatingSubmitted: _loadOrders,
+                                  );
+                                }
+                              },
                             );
                           }
                         },
@@ -447,10 +484,12 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                                     color: Colors.white12,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: const Icon(
-                                    Icons.computer,
-                                    color: Colors.white38,
-                                    size: 32,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: _buildPcImage(
+                                      detail.pc?.picture,
+                                      32,
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(width: 12),
