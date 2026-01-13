@@ -25,8 +25,6 @@ services:
     restart: unless-stopped
     ports:
       - "1433:1433"
-    expose:
-      - 1433
     environment:
       ACCEPT_EULA: "Y"
       SA_PASSWORD: "YourStrong@Passw0rd"
@@ -36,11 +34,11 @@ services:
     networks:
       - easypc-network
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P YourStrong@Passw0rd -Q 'SELECT 1' -C || exit 1"]
-      interval: 30s
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'YourStrong@Passw0rd' -Q 'SELECT 1' -C || exit 1"]
+      interval: 10s
       timeout: 10s
-      retries: 5
-      start_period: 60s
+      retries: 10
+      start_period: 30s
 
   api:
     build:
@@ -64,11 +62,10 @@ services:
       Stripe__SecretKey: "sk_test_51SoNsfE9HC0B2PBzTRVdUEi8IfoFBd7X6ra2ToB8VvF0IpSd4HH6hLXgaQ85UqTEEk55CbcXzP1zIjhmi6KQUkCe00wnDtOrKn"
       Stripe__WebhookSecret: "whsec_test_placeholder_for_local_testing"
     depends_on:
-      - rabbitmq
-      - sqlserver
-    links:
-      - sqlserver
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
+      sqlserver:
+        condition: service_healthy
     networks:
       - easypc-network
 
@@ -90,9 +87,8 @@ services:
       SMTP_ENABLE_SSL: true
       EMAIL_TEST_MODE: true
     depends_on:
-      - rabbitmq
-    links:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     networks:
       - easypc-network
 
