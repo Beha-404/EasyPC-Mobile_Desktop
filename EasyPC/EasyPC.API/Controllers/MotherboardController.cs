@@ -1,13 +1,8 @@
-﻿using EasyPC.Model.Requests.MotherboardRequests;
+﻿using EasyPC.Model;
+using EasyPC.Model.Requests.MotherboardRequests;
 using EasyPC.Model.SearchObjects;
 using EasyPC.Services.Interfaces;
 
-namespace EasyPC.API.Controllers
-{
-    public class MotherboardController : BaseController<Model.Motherboard, MotherboardSearchObject,MotherboardInsertRequest,MotherboardUpdateRequest>
-    {
-        public MotherboardController(IMotherboardService service) : base(service)
-        {
-        }
-    }
-}
+namespace EasyPC.API.Controllers;
+
+public class MotherboardController(IMotherboardService service) : BaseController<Motherboard, MotherboardSearchObject, MotherboardInsertRequest, MotherboardUpdateRequest>(service) { }

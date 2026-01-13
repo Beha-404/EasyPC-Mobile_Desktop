@@ -374,6 +374,7 @@ class _ProductPageState extends State<ProductPage>
           SnackBar(
             content: Text('Action "$action" completed successfully!'),
             backgroundColor: Colors.green,
+            duration: Duration(milliseconds: 1500),
           ),
         );
       }
@@ -521,6 +522,7 @@ class _ProductPageState extends State<ProductPage>
           const SnackBar(
             content: Text('Item updated successfully!'),
             backgroundColor: Colors.green,
+            duration: Duration(milliseconds: 1500)
           ),
         );
       }

@@ -2,30 +2,20 @@
 using EasyPC.Services.Database;
 using MapsterMapper;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace EasyPC.Services.StateMachine.CaseStateMachine
+namespace EasyPC.Services.StateMachine.CaseStateMachine;
+
+public class BaseCaseStateMachine(DatabaseContext context, IMapper mapper, IServiceProvider serviceProvider) : BaseStateMachine<Model.Case, CaseInsertRequest, CaseUpdateRequest, Database.Case>(context, mapper, serviceProvider)
 {
-    public class BaseCaseStateMachine : BaseStateMachine<Model.Case, CaseInsertRequest, CaseUpdateRequest, Database.Case>
+    public override IBaseStateMachine<Model.Case, CaseInsertRequest, CaseUpdateRequest, Database.Case> NextState(string state)
     {
-        public BaseCaseStateMachine(DatabaseContext context, IMapper mapper, IServiceProvider serviceProvider) : base(context, mapper, serviceProvider)
+        return state switch
         {
-        }
-
-        public override IBaseStateMachine<Model.Case, CaseInsertRequest, CaseUpdateRequest, Database.Case> NextState(string state)
-        {
-            return state switch
-            {
-                "initial" => _serviceProvider.GetRequiredService<InitialCaseStateMachine>(),
-                "draft" => _serviceProvider.GetRequiredService<DraftCaseStateMachine>(),
-                "active" => _serviceProvider.GetRequiredService<ActiveCaseStateMachine>(),
-                "hidden" => _serviceProvider.GetRequiredService<HiddenCaseStateMachine>(),
-                _ => throw new NotImplementedException(),
-            };
-        }
+            "initial" => _serviceProvider.GetRequiredService<InitialCaseStateMachine>(),
+            "draft" => _serviceProvider.GetRequiredService<DraftCaseStateMachine>(),
+            "active" => _serviceProvider.GetRequiredService<ActiveCaseStateMachine>(),
+            "hidden" => _serviceProvider.GetRequiredService<HiddenCaseStateMachine>(),
+            _ => throw new NotImplementedException(),
+        };
     }
 }

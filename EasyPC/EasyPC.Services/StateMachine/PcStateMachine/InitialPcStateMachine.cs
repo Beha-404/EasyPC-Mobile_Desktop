@@ -2,37 +2,32 @@
 using EasyPC.Services.Database;
 using MapsterMapper;
 
-namespace EasyPC.Services.StateMachine.PcStateMachine
+namespace EasyPC.Services.StateMachine.PcStateMachine;
+
+public class InitialPcStateMachine(DatabaseContext context, IMapper mapper, IServiceProvider serviceProvider) : InitialStateMachine<Model.PC, PcInsertRequest, PcUpdateRequest, PC>(context, mapper, serviceProvider)
 {
-    public class InitialPcStateMachine : InitialStateMachine<Model.PC, PcInsertRequest, PcUpdateRequest, Database.PC>
+    public override Model.PC? Insert(PcInsertRequest insert)
     {
-        public InitialPcStateMachine(DatabaseContext context, IMapper mapper, IServiceProvider serviceProvider) : base(context, mapper, serviceProvider)
-        {
-        }
+        var entity = _mapper.Map<PC>(insert!);
 
-        public override Model.PC? Insert(PcInsertRequest insert)
-        {
-            var entity = _mapper.Map<Database.PC>(insert!);
+        var processor = _context.Processors.Find(entity.ProcessorId);
+        var graphicsCard = _context.GraphicsCards.Find(entity.GraphicsCardId);
+        var ram = _context.Rams.Find(entity.RamId);
+        var caseItem = _context.Cases.Find(entity.CaseId);
+        var motherBoard = _context.Motherboards.Find(entity.MotherBoardId);
+        var psu = _context.PowerSupplies.Find(entity.PowerSupplyId);
 
-            var processor =  _context.Processors.Find(entity.ProcessorId);
-            var graphicsCard =  _context.GraphicsCards.Find(entity.GraphicsCardId);
-            var ram =  _context.Rams.Find(entity.RamId);
-            var caseItem =  _context.Cases.Find(entity.CaseId);
-            var motherBoard =  _context.Motherboards.Find(entity.MotherBoardId);
-            var psu =  _context.PowerSupplies.Find(entity.PowerSupplyId);
+        entity.Price =
+            processor!.Price +
+            graphicsCard!.Price +
+            ram!.Price +
+            caseItem!.Price +
+            motherBoard!.Price +
+            psu!.Price;
 
-            entity.Price =
-                processor!.Price +
-                graphicsCard!.Price +
-                ram!.Price +
-                caseItem!.Price +
-                motherBoard!.Price +
-                psu!.Price;
-
-            _context.Set<Database.PC>().Add(entity);
-            entity.GetType().GetProperty("StateMachine")?.SetValue(entity, StateNames.Draft);
-            _context.SaveChanges();
-            return _mapper.Map<Model.PC>(entity);
-        }
+        _context.Set<PC>().Add(entity);
+        entity.GetType().GetProperty("StateMachine")?.SetValue(entity, StateNames.Draft);
+        _context.SaveChanges();
+        return _mapper.Map<Model.PC>(entity);
     }
 }

@@ -1,8 +1,11 @@
 import 'package:easy_pc/models/cart.dart';
+import 'package:easy_pc/pages/paypal_webview_page.dart';
 import 'package:easy_pc/providers/cart_provider.dart';
 import 'package:easy_pc/providers/user_provider.dart';
 import 'package:easy_pc/services/order_service.dart';
+import 'package:easy_pc/services/payment_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:provider/provider.dart';
 
 const yellow = Color(0xFFDDC03D);
@@ -172,29 +175,9 @@ class PaymentPage extends StatelessWidget {
           Navigator.pop(context);
         }
         if (context.mounted) {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              backgroundColor: const Color(0xFF2A2A2A),
-              title: const Row(
-                children: [
-                  Icon(Icons.error, color: Colors.red, size: 32),
-                  SizedBox(width: 12),
-                  Text('Authentication Error', style: TextStyle(color: yellow)),
-                ],
-              ),
-              content: const Text(
-                'You need to be logged in to place an order.',
-                style: TextStyle(color: Colors.white70),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('OK', style: TextStyle(color: yellow)),
-                ),
-              ],
-            ),
-          );
+          _showErrorDialog(
+              context, 'Authentication Error',
+              'You need to be logged in to place an order.');
         }
         return;
       }
@@ -211,6 +194,297 @@ class PaymentPage extends StatelessWidget {
             .toList(),
       };
 
+      if (context.mounted) {
+        Navigator.pop(context);
+      }
+
+      switch (paymentMethod) {
+        case 'PayPal':
+          await _handlePayPalPayment(
+              context, orderRequest, username, password);
+          break;
+        case 'CreditCard':
+          await _handleStripePayment(
+              context, orderRequest, username, password);
+          break;
+        case 'CashOnDelivery':
+          await _handleCashOnDelivery(
+              context, orderRequest, username, password);
+          break;
+        default:
+          _showErrorDialog(context, 'Error', 'Unknown payment method');
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context);
+        _showErrorDialog(context, 'Error', 'Failed to process payment: $e');
+      }
+    }
+  }
+
+  Future<void> _handlePayPalPayment(
+    BuildContext context,
+    Map<String, dynamic> orderRequest,
+    String username,
+    String password,
+  ) async {
+    try {
+      if (!context.mounted) return;
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(color: yellow),
+        ),
+      );
+
+      final paymentService = const PaymentService();
+
+      final paypalOrderResponse = await paymentService.createPayPalOrder(
+        orderRequest,
+        username: username,
+        password: password,
+      );
+
+      final paypalOrderId = paypalOrderResponse['orderId'] as String;
+      final approvalUrl = paypalOrderResponse['approvalUrl'] as String?;
+
+      if (!context.mounted) return;
+      Navigator.pop(context);
+
+      if (approvalUrl == null || approvalUrl.isEmpty) {
+        _showErrorDialog(context, 'PayPal Error', 'Failed to get PayPal approval URL');
+        return;
+      }
+
+      if (context.mounted) {
+        final result = await Navigator.push<PayPalResult>(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PayPalWebViewPage(
+              approvalUrl: approvalUrl,
+              paypalOrderId: paypalOrderId,
+            ),
+          ),
+        );
+
+        if (result != null && result.success) {
+          await _capturePayPalPayment(
+            context,
+            result.paypalOrderId,
+            username,
+            password,
+          );
+        } else if (result != null && result.cancelled) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Payment cancelled'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.of(context).popUntil((route) => route.isFirst == false);
+        _showErrorDialog(context, 'PayPal Error', 'Failed to process PayPal payment: $e');
+      }
+    }
+  }
+
+  Future<void> _capturePayPalPayment(
+    BuildContext context,
+    String paypalOrderId,
+    String username,
+    String password,
+  ) async {
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(color: yellow),
+        ),
+      );
+
+      final paymentService = const PaymentService();
+
+      final captureResponse = await paymentService.capturePayPalOrder(
+        paypalOrderId,
+        username: username,
+        password: password,
+      );
+
+      if (context.mounted) {
+        Provider.of<CartProvider>(context, listen: false).clear();
+        Navigator.pop(context);
+
+        _showSuccessDialog(
+          context,
+          'Payment Successful!',
+          'Your PayPal payment was completed successfully.\n\nPayPal ID: $paypalOrderId',
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.pop(context);
+        _showErrorDialog(context, 'Payment Error', 'Failed to capture PayPal payment: $e');
+      }
+    }
+  }
+
+  Future<void> _handleStripePayment(
+    BuildContext context,
+    Map<String, dynamic> orderRequest,
+    String username,
+    String password,
+  ) async {
+    try {
+      if (!context.mounted) return;
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(color: yellow),
+        ),
+      );
+
+      final paymentService = const PaymentService();
+
+      final paymentIntentResponse =
+          await paymentService.createStripePaymentIntent(
+        orderRequest,
+        username: username,
+        password: password,
+      );
+
+      if (!context.mounted) return;
+      Navigator.pop(context);
+
+      final clientSecret = paymentIntentResponse['clientSecret'] as String;
+
+      await Stripe.instance.initPaymentSheet(
+        paymentSheetParameters: SetupPaymentSheetParameters(
+          paymentIntentClientSecret: clientSecret,
+          merchantDisplayName: 'EasyPC',
+          style: ThemeMode.dark,
+          appearance: const PaymentSheetAppearance(
+            colors: PaymentSheetAppearanceColors(
+              background: Color(0xFF1F1F1F),
+              primary: yellow,
+              componentBackground: Color(0xFF2A2A2A),
+              componentText: Colors.white,
+              secondaryText: Colors.white70,
+              placeholderText: Colors.white38,
+            ),
+          ),
+        ),
+      );
+
+      await Stripe.instance.presentPaymentSheet();
+
+      if (context.mounted) {
+        await _confirmStripePayment(
+          context,
+          paymentIntentResponse['paymentIntentId'] as String,
+          orderRequest,
+          username,
+          password,
+        );
+      }
+    } on StripeException catch (e) {
+      if (context.mounted) {
+        if (e.error.code == FailureCode.Canceled) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Payment cancelled'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        } else {
+          _showErrorDialog(context, 'Payment Error', e.error.localizedMessage ?? 'Payment failed');
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.of(context).popUntil((route) => route.isFirst == false);
+        _showErrorDialog(context, 'Stripe Error', 'Failed to process payment: $e');
+      }
+    }
+  }
+
+  Future<void> _confirmStripePayment(
+    BuildContext context,
+    String paymentIntentId,
+    Map<String, dynamic> orderRequest,
+    String username,
+    String password,
+  ) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(color: yellow),
+      ),
+    );
+
+    try {
+      final paymentService = const PaymentService();
+
+      orderRequest['stripePaymentIntentId'] = paymentIntentId;
+
+      final confirmResponse = await paymentService.confirmStripePayment(
+        paymentIntentId,
+        orderRequest,
+        username: username,
+        password: password,
+      );
+
+      if (context.mounted) {
+        Navigator.of(context).pop();
+      }
+
+      if (context.mounted) {
+        Provider.of<CartProvider>(context, listen: false).clear();
+
+        _showSuccessDialog(
+          context,
+          'Order Placed!',
+          'Your Stripe payment was successful.',
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.of(context).pop();
+      }
+      
+      if (context.mounted) {
+        _showErrorDialog(context, 'Payment Error', 'Failed to confirm Stripe payment: $e');
+      }
+    }
+  }
+
+  Future<void> _handleCashOnDelivery(
+    BuildContext context,
+    Map<String, dynamic> orderRequest,
+    String username,
+    String password,
+  ) async {
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(color: yellow),
+        ),
+      );
+
+      orderRequest['paymentMethod'] = 'CashOnDelivery';
+
       await OrderService().createOrder(
         orderRequest,
         username: username,
@@ -219,80 +493,85 @@ class PaymentPage extends StatelessWidget {
 
       if (context.mounted) {
         Provider.of<CartProvider>(context, listen: false).clear();
-      }
-
-      if (context.mounted) {
         Navigator.pop(context);
-      }
 
-      if (context.mounted) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => AlertDialog(
-            backgroundColor: const Color(0xFF2A2A2A),
-            title: const Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.green, size: 32),
-                SizedBox(width: 12),
-                Text('Order Placed!', style: TextStyle(color: yellow)),
-              ],
-            ),
-            content: const Text(
-              'Your order has been placed successfully. You can view it in Order History.',
-              style: TextStyle(color: Colors.white70),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.popUntil(context, (route) => route.isFirst);
-                },
-                child: const Text(
-                  'OK',
-                  style: TextStyle(
-                    color: yellow,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-            ],
-          ),
+        _showSuccessDialog(
+          context,
+          'Order Placed!',
+          'Your order has been placed successfully. You can pay when it is delivered.',
         );
       }
     } catch (e) {
       if (context.mounted) {
         Navigator.pop(context);
-      }
-
-      if (context.mounted) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            backgroundColor: const Color(0xFF2A2A2A),
-            title: const Row(
-              children: [
-                Icon(Icons.error, color: Colors.red, size: 32),
-                SizedBox(width: 12),
-                Text('Error', style: TextStyle(color: Colors.red)),
-              ],
-            ),
-            content: Text(
-              'Failed to place order: $e',
-              style: const TextStyle(color: Colors.white70),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text(
-                  'OK',
-                  style: TextStyle(color: yellow),
-                ),
-              ),
-            ],
-          ),
-        );
+        _showErrorDialog(context, 'Error', 'Failed to place order: $e');
       }
     }
+  }
+
+  void _showErrorDialog(BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2A2A2A),
+        title: Row(
+          children: [
+            const Icon(Icons.error, color: Colors.red, size: 32),
+            const SizedBox(width: 12),
+            Text(title, style: const TextStyle(color: Colors.red)),
+          ],
+        ),
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'OK',
+              style: TextStyle(color: yellow),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSuccessDialog(
+      BuildContext context, String title, String message) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF2A2A2A),
+        title: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.green, size: 32),
+            const SizedBox(width: 12),
+            Text(title, style: const TextStyle(color: yellow)),
+          ],
+        ),
+        content: Text(
+          message,
+          style: const TextStyle(color: Colors.white70),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.popUntil(context, (route) => route.isFirst);
+            },
+            child: const Text(
+              'OK',
+              style: TextStyle(
+                color: yellow,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

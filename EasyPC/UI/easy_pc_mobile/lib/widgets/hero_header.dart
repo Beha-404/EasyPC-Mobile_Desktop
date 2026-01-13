@@ -19,15 +19,6 @@ class HeroHeader extends StatelessWidget {
             height: 1.1,
           ),
         ),
-        SizedBox(height: 6),
-        Text(
-          "Whether you're gaming, editing, or\nstreaming — we've got you covered.",
-          style: TextStyle(
-            color: Colors.white70,
-            fontSize: 14,
-            height: 1.2,
-          ),
-        ),
       ],
     );
   }

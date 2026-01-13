@@ -38,6 +38,7 @@ class PC {
   final int? graphicsCardId;
   final String? picture;
   final int? averageRating;
+  final int? ratingCount;
   final GraphicsCard? graphicsCard;
   final Processor? processor;
   final Case? cases;
@@ -60,6 +61,7 @@ class PC {
     this.available,
     this.picture,
     this.averageRating,
+    this.ratingCount,
     this.graphicsCard,
     this.processor,
     this.cases,
@@ -74,32 +76,37 @@ class PC {
     return PC(
       id: (json['id'] as num).toInt(),
       price: (json['price'] as num?)?.toInt(),
-      name: json['name'] as String,
-      processorId: (json['processorId'] as num).toInt(),
-      caseId: (json['caseId'] as num).toInt(),
-      motherBoardId: (json['motherBoardId'] as num).toInt(),
-      powerSupplyId: (psuId as num).toInt(),
-      ramId: (json['ramId'] as num).toInt(),
-      graphicsCardId: (json['graphicsCardId'] as num).toInt(),
-      available: json['available'] as bool,
-      pcTypeId: (json['pcTypeId'] as num).toInt(),
+      name: json['name'] as String?,
+      processorId: (json['processorId'] as num?)?.toInt() ?? 0,
+      caseId: (json['caseId'] as num?)?.toInt() ?? 0,
+      motherBoardId: (json['motherBoardId'] as num?)?.toInt() ?? 0,
+      powerSupplyId: (psuId as num?)?.toInt() ?? 0,
+      ramId: (json['ramId'] as num?)?.toInt() ?? 0,
+      graphicsCardId: (json['graphicsCardId'] as num?)?.toInt() ?? 0,
+      available: json['available'] as bool? ?? true,
+      pcTypeId: (json['pcTypeId'] as num?)?.toInt() ?? 0,
       pcType: json['pcType'] != null ? PcType.fromJson(json['pcType']) : null,
       picture: json['picture'] as String?,
       averageRating: (json['averageRating'] as num?)?.toInt(),
-      graphicsCard: GraphicsCard.fromJson(
-        (json['graphicsCard']) as Map<String, dynamic>,
-      ),
-      processor: Processor.fromJson(
-        (json['processor']) as Map<String, dynamic>,
-      ),
-      cases: Case.fromJson((json['case']) as Map<String, dynamic>),
-      powerSupply: PowerSupply.fromJson(
-        ((json['powerSupply'] ?? json['psu'])) as Map<String, dynamic>,
-      ),
-      motherboard: MotherBoard.fromJson(
-        ((json['motherboard'] ?? json['motherBoard'])) as Map<String, dynamic>,
-      ),
-      ram: Ram.fromJson((json['ram']) as Map<String, dynamic>),
+      ratingCount: (json['ratingCount'] as num?)?.toInt() ?? 0,
+      graphicsCard: json['graphicsCard'] != null 
+        ? GraphicsCard.fromJson(json['graphicsCard'] as Map<String, dynamic>)
+        : null,
+      processor: json['processor'] != null 
+        ? Processor.fromJson(json['processor'] as Map<String, dynamic>)
+        : null,
+      cases: json['case'] != null 
+        ? Case.fromJson(json['case'] as Map<String, dynamic>)
+        : null,
+      powerSupply: (json['powerSupply'] ?? json['psu']) != null 
+        ? PowerSupply.fromJson((json['powerSupply'] ?? json['psu']) as Map<String, dynamic>)
+        : null,
+      motherboard: (json['motherboard'] ?? json['motherBoard']) != null 
+        ? MotherBoard.fromJson((json['motherboard'] ?? json['motherBoard']) as Map<String, dynamic>)
+        : null,
+      ram: json['ram'] != null 
+        ? Ram.fromJson(json['ram'] as Map<String, dynamic>)
+        : null,
     );
     } catch (e) {
       throw Exception('Error parsing PC: $e');
@@ -120,6 +127,7 @@ class PC {
     'pcTypeId': pcTypeId,
     'picture': picture,
     'averageRating': averageRating,
+    'ratingCount': ratingCount,
     'graphicsCard': graphicsCard?.toJson(),
     'processor': processor?.toJson(),
     'case': cases?.toJson(),

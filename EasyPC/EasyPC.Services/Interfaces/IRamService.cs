@@ -1,14 +1,7 @@
 ﻿using EasyPC.Model.Requests.RamRequests;
 using EasyPC.Model.SearchObjects;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using EasyPC.Model;
 
-namespace EasyPC.Services.Interfaces
-{
-    public interface IRamService : IBaseService<Model.Ram,RamSearchObject,RamInsertRequest,RamUpdateRequest>
-    {
-    }
-}
+namespace EasyPC.Services.Interfaces;
+
+public interface IRamService : IBaseService<Ram, RamSearchObject, RamInsertRequest, RamUpdateRequest> { }

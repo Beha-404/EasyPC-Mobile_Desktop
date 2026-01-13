@@ -37,21 +37,34 @@ class UserService {
     }
   }
 
-  Future<User> getUserById({required int id}) async {
-    final uri = Uri.parse('$apiBaseUrl/api/User/get/$id');
-    final resp = await http.get(uri, headers: {'Accept': 'application/json'});
-    if (resp.statusCode >= 200 && resp.statusCode < 300 && resp.body.isNotEmpty) {
-      final decoded = jsonDecode(resp.body);
-      if (decoded is Map<String, dynamic>) {
-        return User.fromJson(decoded);
-      }
-      throw Exception('Unexpected response shape for GET /api/User/$id');
-    }
-    if (resp.statusCode == 404) {
-      throw Exception('User with id=$id not found');
-    }
-    throw Exception('Fetch user by id failed (${resp.statusCode}): ${resp.body}');
+  Future<User> getUserById({
+  required int id,
+  String? username,
+  String? password,
+}) async {
+  final uri = Uri.parse('$apiBaseUrl/api/User/get/$id');
+  
+  final headers = <String, String>{'Accept': 'application/json'};
+  
+  if (username != null && password != null) {
+    final credentials = base64Encode(utf8.encode('$username:$password'));
+    headers['Authorization'] = 'Basic $credentials';
   }
+  
+  final resp = await http.get(uri, headers: headers);
+  
+  if (resp.statusCode >= 200 && resp.statusCode < 300 && resp.body.isNotEmpty) {
+    final decoded = jsonDecode(resp.body);
+    if (decoded is Map<String, dynamic>) {
+      return User.fromJson(decoded);
+    }
+    throw Exception('Unexpected response shape for GET /api/User/$id');
+  }
+  if (resp.statusCode == 404) {
+    throw Exception('User with id=$id not found');
+  }
+  throw Exception('Fetch user by id failed (${resp.statusCode}): ${resp.body}');
+}
 
   Future<String> register({
     required String username,
@@ -114,7 +127,11 @@ class UserService {
       );
 
         if (resp.statusCode >= 200 && resp.statusCode < 300) {
-          return getUserById(id: user.id!);
+          return getUserById(
+            id: user.id!,
+            username: username,  
+            password: password, 
+            );
       } else {
         throw Exception('Update failed (${resp.statusCode}): ${resp.body}');
       }

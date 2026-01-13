@@ -3,6 +3,7 @@ import 'package:easy_pc/models/pc.dart';
 import 'package:easy_pc/pages/login_page.dart';
 import 'package:easy_pc/providers/cart_provider.dart';
 import 'package:easy_pc/providers/user_provider.dart';
+import 'package:easy_pc/providers/wishlist_provider.dart';
 import 'package:easy_pc/services/rating_service.dart';
 import 'package:easy_pc/services/pc_service.dart';
 import 'package:easy_pc/widgets/dialog/rate_pc_dialog.dart';
@@ -74,7 +75,10 @@ class _PcDetailsContentState extends State<_PcDetailsContent> {
   }
 
   Future<void> _checkIfUserHasRated() async {
-    final userProvider = Provider.of<UserProvider>(widget.parentContext, listen: false);
+    final userProvider = Provider.of<UserProvider>(
+      widget.parentContext,
+      listen: false,
+    );
 
     if (userProvider.user == null || _currentPc?.id == null) {
       setState(() => _checkingRating = false);
@@ -109,7 +113,9 @@ class _PcDetailsContentState extends State<_PcDetailsContent> {
     }
 
     try {
-      final recommendations = await PcService().getRecommendations(_currentPc!.id!);
+      final recommendations = await PcService().getRecommendations(
+        _currentPc!.id!,
+      );
       setState(() {
         _recommendations = recommendations;
         _loadingRecommendations = false;
@@ -189,10 +195,15 @@ class _PcDetailsContentState extends State<_PcDetailsContent> {
                     Icons.power,
                   ),
                   const SizedBox(height: 10),
-                  _buildComponentCard('Case', _currentPc!.cases?.name ?? 'N/A', [
-                    'Form Factor: ${_currentPc!.cases?.formFactor ?? 'N/A'}',
-                    'Price: \$${_currentPc!.cases?.price ?? 0}',
-                  ], Icons.computer),
+                  _buildComponentCard(
+                    'Case',
+                    _currentPc!.cases?.name ?? 'N/A',
+                    [
+                      'Form Factor: ${_currentPc!.cases?.formFactor ?? 'N/A'}',
+                      'Price: \$${_currentPc!.cases?.price ?? 0}',
+                    ],
+                    Icons.computer,
+                  ),
                   const SizedBox(height: 20),
                   if (_loadingRecommendations) ...[
                     _buildSectionTitle('Similar PCs'),
@@ -218,6 +229,17 @@ class _PcDetailsContentState extends State<_PcDetailsContent> {
   }
 
   Widget _buildHeader(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(
+      widget.parentContext,
+      listen: false,
+    );
+    final wishlistProvider = Provider.of<WishlistProvider>(
+      widget.parentContext,
+    );
+    final isInWishlist =
+        _currentPc?.id != null &&
+        wishlistProvider.isInWishlist(_currentPc!.id!);
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -254,6 +276,18 @@ class _PcDetailsContentState extends State<_PcDetailsContent> {
               ],
             ),
           ),
+          if (userProvider.user != null && _currentPc?.id != null)
+            IconButton(
+              onPressed: () => _toggleWishlist(),
+              icon: Icon(
+                isInWishlist ? Icons.favorite : Icons.favorite_border,
+                color: isInWishlist ? Colors.red : Colors.white70,
+              ),
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.white.withValues(alpha: 0.1),
+              ),
+            ),
+          const SizedBox(width: 4),
           IconButton(
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.close, color: yellow),
@@ -264,6 +298,72 @@ class _PcDetailsContentState extends State<_PcDetailsContent> {
         ],
       ),
     );
+  }
+
+  Future<void> _toggleWishlist() async {
+    final userProvider = Provider.of<UserProvider>(
+      widget.parentContext,
+      listen: false,
+    );
+    final wishlistProvider = Provider.of<WishlistProvider>(
+      widget.parentContext,
+      listen: false,
+    );
+
+    if (userProvider.user == null || _currentPc?.id == null) return;
+
+    final username = userProvider.user?.username ?? '';
+    final password = userProvider.password ?? '';
+    final headers = {
+      'Authorization':
+          'Basic ${base64Encode(utf8.encode('$username:$password'))}',
+    };
+
+    final isInWishlist = wishlistProvider.isInWishlist(_currentPc!.id!);
+
+    final result = await wishlistProvider.toggleWishlist(
+      userProvider.user!.id!,
+      _currentPc!.id!,
+      headers: headers,
+    );
+
+    if (mounted) {
+      ScaffoldMessenger.of(widget.parentContext).clearSnackBars();
+      ScaffoldMessenger.of(widget.parentContext).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(
+                result
+                    ? (isInWishlist ? Icons.heart_broken : Icons.favorite)
+                    : Icons.error,
+                color: Colors.white,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  result
+                      ? (isInWishlist
+                            ? 'Removed from wishlist'
+                            : 'Added to wishlist')
+                      : 'Failed to update wishlist',
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: result
+              ? (isInWishlist ? Colors.grey[850] : Colors.red)
+              : Colors.grey[850],
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+      setState(() {}); // Refresh UI
+    }
   }
 
   Widget _buildMainInfo() {
@@ -317,7 +417,10 @@ class _PcDetailsContentState extends State<_PcDetailsContent> {
                       const SizedBox(width: 8),
                       Text(
                         '(${_currentPc!.averageRating ?? 0}/5)',
-                        style: const TextStyle(color: Colors.white70, fontSize: 13),
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 13,
+                        ),
                       ),
                     ],
                   ),
@@ -346,7 +449,10 @@ class _PcDetailsContentState extends State<_PcDetailsContent> {
                         _existingRatingValue != null
                             ? 'Edit ($_existingRatingValue★)'
                             : 'Rate',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                        ),
                       ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: yellow,
@@ -488,8 +594,18 @@ class _PcDetailsContentState extends State<_PcDetailsContent> {
   Widget _buildRecommendationCard(PC pc) {
     return GestureDetector(
       onTap: () {
-        Navigator.pop(context);
-        PcDetailsDialog.show(widget.parentContext, pc);
+        // Instead of closing and reopening, just update the current dialog
+        setState(() {
+          _currentPc = pc;
+          _loadingRecommendations = true;
+          _checkingRating = true;
+        });
+        _loadRecommendations();
+        if (widget.showRateButton) {
+          _checkIfUserHasRated();
+        } else {
+          setState(() => _checkingRating = false);
+        }
       },
       child: Container(
         width: 200,

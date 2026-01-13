@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'package:easy_pc/constants/app_colors.dart';
 import 'package:easy_pc/models/user.dart';
 import 'package:easy_pc/pages/home_page.dart';
 import 'package:easy_pc/pages/register_page.dart';
 import 'package:easy_pc/providers/user_provider.dart';
+import 'package:easy_pc/providers/wishlist_provider.dart';
 import 'package:easy_pc/services/user_service.dart';
 import 'package:easy_pc/widgets/auth/auth_text_field.dart';
 import 'package:easy_pc/widgets/auth/auth_button.dart';
@@ -183,6 +185,14 @@ class _LoginPageState extends State<LoginPage> {
 
       final userProvider = Provider.of<UserProvider>(context, listen: false);
       await userProvider.setUserWithPassword(_user!, _passCtrl.text);
+
+      // Load wishlist for the logged in user
+      if (!mounted) return;
+      final wishlistProvider = Provider.of<WishlistProvider>(context, listen: false);
+      final headers = {
+        'Authorization': 'Basic ${base64Encode(utf8.encode('${_userCtrl.text}:${_passCtrl.text}'))}',
+      };
+      wishlistProvider.loadWishlist(_user!.id!, headers: headers);
 
       if (!mounted) return;
 
