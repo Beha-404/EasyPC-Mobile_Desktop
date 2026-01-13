@@ -47,10 +47,7 @@ class _PayPalWebViewPageState extends State<PayPalWebViewPage> {
             final url = request.url;
             debugPrint('PayPal WebView navigating to: $url');
             
-            // PayPal redirects back with token and PayerID when user approves
-            // URL format: https://easypc.com/paypal/success?token=XXXXX&PayerID=YYYYY
             if (url.contains('PayerID=')) {
-              // Extract PayerID to confirm user actually approved
               final uri = Uri.parse(url);
               final payerId = uri.queryParameters['PayerID'];
               
@@ -65,7 +62,6 @@ class _PayPalWebViewPageState extends State<PayPalWebViewPage> {
               }
             }
             
-            // Check if PayPal redirected to cancel URL
             if (url.contains('easypc.com/paypal/cancel') || url.contains('cancel')) {
               Navigator.pop(context, PayPalResult(
                 success: false,

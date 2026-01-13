@@ -38,6 +38,7 @@ class PC {
   final int? graphicsCardId;
   final String? picture;
   final int? averageRating;
+  final int? ratingCount;
   final GraphicsCard? graphicsCard;
   final Processor? processor;
   final Case? cases;
@@ -60,6 +61,7 @@ class PC {
     this.available,
     this.picture,
     this.averageRating,
+    this.ratingCount,
     this.graphicsCard,
     this.processor,
     this.cases,
@@ -86,6 +88,7 @@ class PC {
       pcType: json['pcType'] != null ? PcType.fromJson(json['pcType']) : null,
       picture: json['picture'] as String?,
       averageRating: (json['averageRating'] as num?)?.toInt(),
+      ratingCount: (json['ratingCount'] as num?)?.toInt() ?? 0,
       graphicsCard: json['graphicsCard'] != null 
         ? GraphicsCard.fromJson(json['graphicsCard'] as Map<String, dynamic>)
         : null,
@@ -124,6 +127,7 @@ class PC {
     'pcTypeId': pcTypeId,
     'picture': picture,
     'averageRating': averageRating,
+    'ratingCount': ratingCount,
     'graphicsCard': graphicsCard?.toJson(),
     'processor': processor?.toJson(),
     'case': cases?.toJson(),

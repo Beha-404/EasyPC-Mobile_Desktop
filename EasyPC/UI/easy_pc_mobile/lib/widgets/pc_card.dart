@@ -57,7 +57,7 @@ class PcCard extends StatelessWidget {
                 const SizedBox(height: 3),
                 Expanded(child: _buildImage()),
                 const SizedBox(height: 3),
-                _buildStars(pc.averageRating ?? 0),
+                _buildStarsWithCount(pc.averageRating ?? 0, pc.ratingCount ?? 0),
                 const SizedBox(height: 3),
                 Text(
                   'Price: ${pc.price}\$',
@@ -126,15 +126,25 @@ class PcCard extends StatelessWidget {
     }
   }
 
-  Widget _buildStars(int rating) {
+  Widget _buildStarsWithCount(int rating, int reviewCount) {
     return Row(
-      children: List.generate(5, (i) {
-        if (i < rating) {
-          return const Icon(Icons.star, size: 18, color: yellow);
-        } else {
-          return const Icon(Icons.star_border, size: 18, color: yellow);
-        }
-      }),
+      children: [
+        ...List.generate(5, (i) {
+          if (i < rating) {
+            return const Icon(Icons.star, size: 18, color: yellow);
+          } else {
+            return const Icon(Icons.star_border, size: 18, color: yellow);
+          }
+        }),
+        const SizedBox(width: 6),
+        Text(
+          '($reviewCount)',
+          style: const TextStyle(
+            color: Colors.white70,
+            fontSize: 12,
+          ),
+        ),
+      ],
     );
   }
 

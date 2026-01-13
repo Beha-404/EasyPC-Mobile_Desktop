@@ -1,148 +1,135 @@
-# EasyPC - Intelligent PC Building Platform
-**Software Development II - Seminar Project**
+# EasyPC - Inteligentna Platforma za Sastavljanje Računara
+**Seminarski rad iz Razvoj softvera II**
 
-EasyPC is an advanced multi-platform application for building and purchasing computers with an intelligent compatibility checking system and a step-by-step wizard for PC configuration.
+EasyPC je napredna multi-platformska aplikacija za sastavljanje i kupovinu računara sa inteligentnim sistemom za provjeru kompatibilnosti i korak-po-korak vodičem za konfiguraciju računara.
 
-**Login Credentials:**
-- Desktop app: `admin` / `admin123` or `superadmin` / `superadmin123`
-- Mobile app: `user1` / `user123`
+**Pristupni podaci:**
+- Desktop aplikacija: `desktop` / `test`
+- Mobilna aplikacija: `mobile` / `test`
 
-The mobile application is launched via emulator: Pixel_9a, or via your own device.
+**Test kartica:** `4242 4242 4242 4242`
+**Test PayPal:** @email:`rs2-flutter@personal.example.com` @password:`flutter123`
 
-## EasyPC - Build Your Dream PC
+Mobilna aplikacija je pokrenuta preko emulatora: **Pixel_9a**, ili preko svog uređaja.
 
-EasyPC is a multi-platform application for building and purchasing computers with a desktop app (Flutter), mobile app (Flutter), web app (Angular), and recommendation system.
+---
 
-## 🚀 Features
+## EasyPC - Sastavi Računar Svojih Snova
 
-### 💻 Desktop Application (Flutter)
-- Admin panel for product management
-- **Compatibility Checker** UI
-- **Build Wizard** interface
-- User and order management
+EasyPC je multi-platformska aplikacija za sastavljanje i kupovinu računara sa desktop aplikacijom (Flutter), mobilnom aplikacijom (Flutter) i sistemom preporuke.
+
+## 🚀 Funkcionalnosti
+
+### 💻 Desktop Aplikacija (Flutter)
+- Admin panel za upravljanje proizvodima
+- **Compatibility Checker** interfejs
+- **Build Wizard** interfejs
+- Upravljanje korisnicima i narudžbama
 - Real-time support chat (SignalR)
-- PDF reports
+- PDF izvještaji
 
-### 📱 Mobile Application (Flutter)
-- Browse PC configurations
-- **Compatibility Checker** (mobile-optimized)
-- **Build Wizard** (vertical stepper)
-- Shopping cart and ordering
-- User profile
+### 📱 Mobilna Aplikacija (Flutter)
+- Pregled PC konfiguracija
+- **Compatibility Checker** (optimizovan za mobilne uređaje)
+- **Build Wizard** (vertikalni stepper)
+- Korpa i naručivanje
+- Korisnički profil
 
 ### 🔧 **Compatibility Checker**
-- Automatic component compatibility verification
-- Socket matching (CPU ↔ Motherboard)
-- Form factor validation (Motherboard ↔ Case)
-- Power supply verification
-- Bottleneck detection (CPU/GPU balance)
-- Scoring system (0-100 points)
-- Visual recommendations and warnings
+- Automatska provjera kompatibilnosti komponenti
+- Provjera socket-a (CPU ↔ Matična ploča)
+- Validacija form faktora (Matična ploča ↔ Kućište)
+- Provjera napajanja
+- Detekcija bottleneck-a (CPU/GPU balans)
+- Sistem bodovanja (0-100 bodova)
+- Vizuelne preporuke i upozorenja
 
 ### 🧙 **Build Wizard**
-- 7-step guide for building a PC
-  1. PC Type (Gaming, Office, Workstation)
-  2. Processor (filtered by PC type)
-  3. Motherboard (compatible sockets)
-  4. RAM (optimal speeds)
-  5. Graphics Card (balanced with CPU)
-  6. Power Supply (recommended wattage)
-  7. Case (compatible form factors)
-- Real-time compatibility check
-- Dynamic price calculation
-- Smart component filtering
-- Save & Order functionality
+- Vodič kroz 7 koraka za sastavljanje računara
+  1. Tip računara (Gaming, Office, Workstation)
+  2. Procesor (filtriran po tipu računara)
+  3. Matična ploča (kompatibilni socket-i)
+  4. RAM memorija (optimalne brzine)
+  5. Grafička kartica (balansirana sa CPU-om)
+  6. Napajanje (preporučena snaga)
+  7. Kućište (kompatibilni form faktori)
+- Provjera kompatibilnosti u realnom vremenu
+- Dinamički izračun cijene
+- Pametno filtriranje komponenti
+- Funkcionalnost čuvanja i naručivanja
 
 
-## 🛠️ Technologies
+## 🛠️ Tehnologije
 
-| Layer | Technology |
-|-------|------------|
+| Sloj | Tehnologija |
+|------|-------------|
 | **Backend** | .NET 9, ASP.NET Core Web API |
-| **Database** | SQL Server 2022, Entity Framework Core |
-| **Authentication** | JWT Tokens, Basic Auth |
+| **Baza podataka** | SQL Server 2022, Entity Framework Core |
+| **Autentifikacija** | JWT Tokens, Basic Auth |
 | **Real-time** | SignalR (Support Chat) |
 | **Message Queue** | RabbitMQ |
 | **Desktop & Mobile** | Flutter 3.x, Dart |
-| **Containerization** | Docker, Docker Compose |
+| **Kontejnerizacija** | Docker, Docker Compose |
 
-## 📦 Installation and Setup
+## 📦 Instalacija i Pokretanje
 
-### 1. Docker (Recommended)
+### 1. Docker (Preporučeno)
 ```bash
 cd EasyPC
 docker-compose up -d --build
 ```
-**Services:**
+**Servisi:**
 - API: `http://localhost:5285`
 - SQL Server: `localhost:1433`
 - RabbitMQ: `localhost:15672` (guest/guest)
 
-### 2. Desktop Application
+### 2. Desktop Aplikacija
 ```bash
 cd UI/easy_pc_admin
 flutter pub get
 flutter run -d windows
 ```
 
-**Login:** `admin` / `admin123` or `superadmin` / `superadmin123`
+**Login:** `desktop` / `test`
 
-### 3. Mobile Application
+### 3. Mobilna Aplikacija
 ```bash
 cd UI/easy_pc_mobile
 flutter pub get
 flutter run
 ```
 
-**Login:** `user1` / `user123`
+**Login:** `mobile` / `test`
 
 ---
 
-## 🎮 How to Use
+## 🎮 Kako Koristiti
 
 ### Compatibility Checker
-1. Click on "Compatibility" in navigation
-2. Select components from dropdown menus
-3. Click "Check Compatibility"
-4. Review results:
-   - ✅ **Green:** All compatible
-   - ⚠️ **Orange:** Warnings
-   - ❌ **Red:** Incompatible
+1. Kliknite na "Compatibility" u navigaciji
+2. Odaberite komponente iz padajućih menija
+3. Kliknite "Check Compatibility"
+4. Pregledajte rezultate:
+   - ✅ **Zeleno:** Sve kompatibilno
+   - ⚠️ **Narandžasto:** Upozorenja
+   - ❌ **Crveno:** Nekompatibilno
 
 ### Build Wizard
-1. Click on "Build Wizard" in navigation
-2. Follow the 7 steps
-3. Select a component from the list
-4. Review real-time price
-5. At the end: "Save Build"
-
-## 🗄️ Seed Data
-
-The application automatically creates seed data on first run:
-
-| Type | Username | Password |
-|------|----------|----------|
-| Desktop Admin | `admin` | `admin123` |
-| Super Admin | `superadmin` | `superadmin123` |
-| Mobile User | `user1` | `user123` |
-
-**Seed components:**
-- 10+ Processors (Intel i5/i7/i9, AMD Ryzen 5/7/9)
-- 10+ Motherboards (ASUS, MSI, Gigabyte)
-- 8+ RAM modules (Corsair, Kingston, G.Skill)
-- 10+ Graphics Cards (NVIDIA RTX, AMD Radeon)
-- 6+ Power Supplies (Corsair, EVGA - 550W-850W)
-- 6+ Cases (NZXT, Corsair - ATX, MicroATX, Mini-ITX)
+1. Kliknite na "Build Wizard" u navigaciji
+2. Pratite 7 koraka
+3. Odaberite komponentu sa liste
+4. Pregledajte cijenu u realnom vremenu
+5. Na kraju: "Save Build"
 
 ---
 
-## 📄 License
-
-MIT License
-
-⭐ **Difference from classic e-commerce projects:**
-- ✅ Automatic compatibility verification
-- ✅ Intelligent Build Wizard with 7 steps
+⭐ **Razlika od klasičnih e-commerce projekata:**
+- ✅ Automatska provjera kompatibilnosti
+- ✅ Inteligentni Build Wizard sa 7 koraka
+- ✅ Filtriranje u realnom vremenu na osnovu prethodnih izbora
+- ✅ Detekcija bottleneck-a
+- ✅ Sistem bodovanja kompatibilnosti
+- ✅ Preporuke za napajanje i balans komponenti
 - ✅ Real-time filtering based on previous choices
 - ✅ Bottleneck detection
 - ✅ Compatibility scoring system

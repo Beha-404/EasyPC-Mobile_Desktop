@@ -241,7 +241,6 @@ class PaymentPage extends StatelessWidget {
 
       final paymentService = const PaymentService();
 
-      // Create PayPal order - this calls the real PayPal API
       final paypalOrderResponse = await paymentService.createPayPalOrder(
         orderRequest,
         username: username,
@@ -252,14 +251,13 @@ class PaymentPage extends StatelessWidget {
       final approvalUrl = paypalOrderResponse['approvalUrl'] as String?;
 
       if (!context.mounted) return;
-      Navigator.pop(context); // Close loading
+      Navigator.pop(context);
 
       if (approvalUrl == null || approvalUrl.isEmpty) {
         _showErrorDialog(context, 'PayPal Error', 'Failed to get PayPal approval URL');
         return;
       }
 
-      // Navigate to PayPal WebView for user to login and approve
       if (context.mounted) {
         final result = await Navigator.push<PayPalResult>(
           context,
@@ -272,7 +270,6 @@ class PaymentPage extends StatelessWidget {
         );
 
         if (result != null && result.success) {
-          // User approved the payment - now capture it
           await _capturePayPalPayment(
             context,
             result.paypalOrderId,
@@ -315,7 +312,6 @@ class PaymentPage extends StatelessWidget {
 
       final paymentService = const PaymentService();
 
-      // Capture PayPal order - this completes the payment
       final captureResponse = await paymentService.capturePayPalOrder(
         paypalOrderId,
         username: username,
@@ -324,17 +320,17 @@ class PaymentPage extends StatelessWidget {
 
       if (context.mounted) {
         Provider.of<CartProvider>(context, listen: false).clear();
-        Navigator.pop(context); // Close loading
+        Navigator.pop(context);
 
         _showSuccessDialog(
           context,
           'Payment Successful!',
-          'Your PayPal payment was completed successfully.\n\nOrder ID: ${captureResponse['orderId']}\nPayPal ID: $paypalOrderId',
+          'Your PayPal payment was completed successfully.\n\nPayPal ID: $paypalOrderId',
         );
       }
     } catch (e) {
       if (context.mounted) {
-        Navigator.pop(context); // Close loading
+        Navigator.pop(context);
         _showErrorDialog(context, 'Payment Error', 'Failed to capture PayPal payment: $e');
       }
     }
@@ -359,7 +355,6 @@ class PaymentPage extends StatelessWidget {
 
       final paymentService = const PaymentService();
 
-      // Create Stripe payment intent
       final paymentIntentResponse =
           await paymentService.createStripePaymentIntent(
         orderRequest,
@@ -368,11 +363,10 @@ class PaymentPage extends StatelessWidget {
       );
 
       if (!context.mounted) return;
-      Navigator.pop(context); // Close loading
+      Navigator.pop(context);
 
       final clientSecret = paymentIntentResponse['clientSecret'] as String;
 
-      // Initialize Stripe payment sheet
       await Stripe.instance.initPaymentSheet(
         paymentSheetParameters: SetupPaymentSheetParameters(
           paymentIntentClientSecret: clientSecret,
@@ -391,10 +385,8 @@ class PaymentPage extends StatelessWidget {
         ),
       );
 
-      // Present payment sheet
       await Stripe.instance.presentPaymentSheet();
 
-      // Payment successful - confirm with backend
       if (context.mounted) {
         await _confirmStripePayment(
           context,
@@ -419,7 +411,6 @@ class PaymentPage extends StatelessWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        // Close any open dialogs
         Navigator.of(context).popUntil((route) => route.isFirst == false);
         _showErrorDialog(context, 'Stripe Error', 'Failed to process payment: $e');
       }
@@ -433,7 +424,6 @@ class PaymentPage extends StatelessWidget {
     String username,
     String password,
   ) async {
-    // Show loading dialog
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -445,10 +435,8 @@ class PaymentPage extends StatelessWidget {
     try {
       final paymentService = const PaymentService();
 
-      // Add Stripe Payment Intent ID to request
       orderRequest['stripePaymentIntentId'] = paymentIntentId;
 
-      // Confirm Stripe payment
       final confirmResponse = await paymentService.confirmStripePayment(
         paymentIntentId,
         orderRequest,
@@ -456,7 +444,6 @@ class PaymentPage extends StatelessWidget {
         password: password,
       );
 
-      // Close loading dialog
       if (context.mounted) {
         Navigator.of(context).pop();
       }
@@ -467,11 +454,10 @@ class PaymentPage extends StatelessWidget {
         _showSuccessDialog(
           context,
           'Order Placed!',
-          'Your Stripe payment was successful. Order ID: ${confirmResponse['orderId']}',
+          'Your Stripe payment was successful.',
         );
       }
     } catch (e) {
-      // Close loading dialog
       if (context.mounted) {
         Navigator.of(context).pop();
       }

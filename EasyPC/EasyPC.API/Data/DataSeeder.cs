@@ -90,6 +90,44 @@ public class DataSeeder(DatabaseContext context)
             PostalCode = "71000"
         });
 
+        // Desktop korisnik za seminarski rad
+        var (desktopHash, desktopSalt) = GenerateHash("test");
+        users.Add(new User
+        {
+            Username = "desktop",
+            Password = "test",
+            Hash = desktopHash,
+            Salt = desktopSalt,
+            FirstName = "Desktop",
+            LastName = "User",
+            Email = "desktop@easypc.com",
+            Role = UserRole.Admin,
+            City = "Sarajevo",
+            State = "FBiH",
+            Country = "Bosnia and Herzegovina",
+            Address = "FIT 1",
+            PostalCode = "71000"
+        });
+
+        // Mobile korisnik za seminarski rad
+        var (mobileHash, mobileSalt) = GenerateHash("test");
+        users.Add(new User
+        {
+            Username = "mobile",
+            Password = "test",
+            Hash = mobileHash,
+            Salt = mobileSalt,
+            FirstName = "Mobile",
+            LastName = "User",
+            Email = "mobile@easypc.com",
+            Role = UserRole.User,
+            City = "Sarajevo",
+            State = "FBiH",
+            Country = "Bosnia and Herzegovina",
+            Address = "FIT 2",
+            PostalCode = "71000"
+        });
+
         var firstNames = new[] { "Marko", "Ana", "Petar", "Jovana", "Stefan", "Milica", "Nikola", "Jelena", "Aleksandar", "Katarina" };
         var lastNames = new[] { "Marković", "Petrović", "Nikolić", "Jovanović", "Đorđević", "Ilić", "Pavlović", "Stanković", "Radovanović", "Milosavljević" };
         var cities = new[] { "Beograd", "Novi Sad", "Niš", "Sarajevo", "Zagreb", "Podgorica", "Skopje", "Ljubljana" };
