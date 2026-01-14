@@ -69,6 +69,11 @@ public class OrderService(DatabaseContext context, IMapper mapper, IBus bus) : I
             query = query.Where(o => o.UserId == searchObject.UserId.Value);
         }
 
+        if (searchObject.OrderId.HasValue)
+        {
+            query = query.Where(o => o.Id == searchObject.OrderId.Value);
+        }
+
         var totalCount = query.Count();
 
         if (searchObject.Page.HasValue && searchObject.PageSize.HasValue)
