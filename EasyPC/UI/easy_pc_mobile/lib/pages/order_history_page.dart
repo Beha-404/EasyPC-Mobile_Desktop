@@ -1,9 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:easy_pc/models/order.dart';
 import 'package:easy_pc/providers/user_provider.dart';
 import 'package:easy_pc/services/order_service.dart';
+import 'package:easy_pc/services/user_gallery_service.dart';
 import 'package:easy_pc/widgets/dialog/pc_details_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -225,24 +228,34 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: yellow.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: yellow),
-                    ),
-                    child: Text(
-                      order.paymentMethod ?? 'N/A',
-                      style: const TextStyle(
-                        color: yellow,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: yellow.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: yellow),
+                        ),
+                        child: Text(
+                          order.paymentMethod ?? 'N/A',
+                          style: const TextStyle(
+                            color: yellow,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(Icons.camera_alt, color: yellow),
+                        onPressed: () => _uploadImageForOrder(order),
+                        tooltip: 'Upload PC Image',
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -371,6 +384,119 @@ class _OrderHistoryPageState extends State<OrderHistoryPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _uploadImageForOrder(Order order) async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    final username = userProvider.user?.username;
+    final password = userProvider.password;
+
+    if (username == null || password == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Authentication required. Please log in again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final picker = ImagePicker();
+    final XFile? image = await picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1920,
+      maxHeight: 1920,
+      imageQuality: 85,
+    );
+
+    if (image == null) return;
+
+    // Show dialog to add description
+    String? description;
+    final shouldUpload = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        final controller = TextEditingController();
+        return AlertDialog(
+          backgroundColor: const Color(0xFF2A2A2A),
+          title: const Text(
+            'Add Description',
+            style: TextStyle(color: yellow),
+          ),
+          content: TextField(
+            controller: controller,
+            style: const TextStyle(color: Colors.white),
+            decoration: const InputDecoration(
+              hintText: 'Optional: Describe your PC...',
+              hintStyle: TextStyle(color: Colors.white38),
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.white24),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: yellow),
+              ),
+            ),
+            maxLines: 3,
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                description = controller.text.trim();
+                Navigator.pop(context, true);
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: yellow),
+              child: const Text('Upload', style: TextStyle(color: Colors.black)),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldUpload != true) return;
+
+    // Show loading
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(color: yellow),
+      ),
+    );
+
+    try {
+      await UserGalleryService().uploadImage(
+        orderId: order.id,
+        imageFile: File(image.path),
+        description: description?.isEmpty ?? true ? null : description,
+        username: username,
+        password: password,
+      );
+
+      if (!mounted) return;
+      Navigator.pop(context); // Close loading dialog
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Image uploaded successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context); // Close loading dialog
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to upload image: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   Widget _buildPcImage(String? picture, double iconSize) {

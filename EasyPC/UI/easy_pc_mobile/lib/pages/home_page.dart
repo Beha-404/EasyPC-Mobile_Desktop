@@ -2,6 +2,7 @@ import 'package:easy_pc/models/pc.dart';
 import 'package:easy_pc/models/user.dart';
 import 'package:easy_pc/pages/order_history_page.dart';
 import 'package:easy_pc/pages/support_page.dart';
+import 'package:easy_pc/pages/users_gallery_page.dart';
 import 'package:easy_pc/pages/wishlist_page.dart';
 import 'package:easy_pc/providers/user_provider.dart';
 import 'package:easy_pc/providers/wishlist_provider.dart';
@@ -18,7 +19,7 @@ import 'package:provider/provider.dart';
 import 'package:easy_pc/providers/cart_provider.dart';
 import 'package:easy_pc/pages/cart_page.dart';
 
-enum _MenuAction { editProfile, orderHistory, wishlist, support, logout }
+enum _MenuAction { editProfile, orderHistory, wishlist, usersGallery, support, logout }
 
 const yellow = Color(0xFFDDC03D);
 
@@ -112,6 +113,14 @@ class _HomePageState extends State<HomePage> {
         if (user == null)
           ..._guestActions()
         else ...[
+          IconButton(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const UsersGalleryPage()),
+            ),
+            icon: const Icon(Icons.photo_library, color: yellow),
+            tooltip: 'Users Gallery',
+          ),
           ..._userActions(user),
           _cartButton(),
         ],
@@ -121,6 +130,14 @@ class _HomePageState extends State<HomePage> {
 
   List<Widget> _guestActions() {
     return [
+      IconButton(
+        onPressed: () => Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const UsersGalleryPage()),
+        ),
+        icon: const Icon(Icons.photo_library, color: yellow),
+        tooltip: 'Users Gallery',
+      ),
       TextButton.icon(
         onPressed: () => Navigator.push(
           context,
@@ -248,6 +265,12 @@ class _HomePageState extends State<HomePage> {
         Navigator.push(
           context,
           MaterialPageRoute(builder: (_) => const WishlistPage()),
+        );
+        break;
+      case _MenuAction.usersGallery:
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const UsersGalleryPage()),
         );
         break;
       case _MenuAction.support:

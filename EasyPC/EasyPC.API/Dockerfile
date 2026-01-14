@@ -31,4 +31,8 @@ COPY --from=build /src/EasyPC.API/Assets /app/publish/Assets
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+USER root
+# Ensure gallery image directory exists and is writable by the app user
+RUN mkdir -p /app/Assets/Images/UserGallery && chown -R app:app /app/Assets || true
+USER $APP_UID
 ENTRYPOINT ["dotnet", "EasyPC.API.dll"]

@@ -66,6 +66,8 @@ services:
         condition: service_healthy
       sqlserver:
         condition: service_healthy
+    volumes:
+      - gallery-images:/app/Assets/Images/UserGallery
     networks:
       - easypc-network
 
@@ -99,3 +101,4 @@ networks:
 volumes:
   rabbitmq-data:
   sqlserver-data:
+  gallery-images:

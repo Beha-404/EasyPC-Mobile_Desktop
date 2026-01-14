@@ -32,6 +32,8 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
 
     public DbSet<Wishlist> Wishlists { get; set; }
 
+    public DbSet<UserGallery> UserGalleries { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -110,6 +112,22 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
                   .WithMany()
                   .HasForeignKey(w => w.UserId)
                   .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<UserGallery>(entity =>
+        {
+            entity.HasOne(ug => ug.User)
+                  .WithMany()
+                  .HasForeignKey(ug => ug.UserId)
+                  .OnDelete(DeleteBehavior.NoAction);
+
+            entity.HasOne(ug => ug.Order)
+                  .WithMany()
+                  .HasForeignKey(ug => ug.OrderId)
+                  .OnDelete(DeleteBehavior.NoAction);
+
+            entity.Property(ug => ug.UploadDate)
+                  .HasDefaultValueSql("GETUTCDATE()");
         });
     }
 }

@@ -100,6 +100,7 @@ builder.Services.AddTransient<IPcService, PcService>();
 builder.Services.AddTransient<IOrderService, OrderService>();
 builder.Services.AddTransient<IRatingService, RatingService>();
 builder.Services.AddTransient<IWishlistService, WishlistService>();
+builder.Services.AddTransient<IUserGalleryService, UserGalleryService>();
 
 // New services for Build Wizard and Compatibility Checker
 builder.Services.AddScoped<CompatibilityService>();
@@ -155,9 +156,23 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<DatabaseContext>();
+        var logger = services.GetRequiredService<ILogger<Program>>();
 
         // Apply migrations automatically
+        logger.LogInformation("Checking for pending migrations...");
+        
+        var appliedMigrations = await context.Database.GetAppliedMigrationsAsync();
+        logger.LogInformation($"Applied migrations: {string.Join(", ", appliedMigrations)}");
+        
+        var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
+        logger.LogInformation($"Pending migrations count: {pendingMigrations.Count()}");
+        foreach (var migration in pendingMigrations)
+        {
+            logger.LogInformation($"Pending migration: {migration}");
+        }
+        
         await context.Database.MigrateAsync();
+        logger.LogInformation("Migrations applied successfully.");
 
         var seeder = new DataSeeder(context);
         await seeder.SeedAsync();
