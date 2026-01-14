@@ -4,7 +4,9 @@
 EasyPC je napredna multi-platformska aplikacija za sastavljanje i kupovinu računara sa inteligentnim sistemom za provjeru kompatibilnosti i korak-po-korak vodičem za konfiguraciju računara.
 
 **Pristupni podaci:**
-- Desktop aplikacija: `desktop` / `test`
+- Desktop aplikacija: `desktop` / `test` ili 
+`superadmin` / `superadmin123` ako zelimo imati dodatne funkcije
+
 - Mobilna aplikacija: `mobile` / `test`
 
 **Test kartica:** `4242 4242 4242 4242`
