@@ -37,6 +37,7 @@ class PC {
   final int? graphicsCardId;
   final String? picture;
   final int? rating;
+  final int? ratingCount;
   final String? stateMachine;
   final GraphicsCard? graphicsCard;
   final Processor? processor;
@@ -60,6 +61,7 @@ class PC {
     this.available,
     this.picture,
     this.rating,
+    this.ratingCount,
     this.stateMachine,
     this.graphicsCard,
     this.processor,
@@ -70,8 +72,6 @@ class PC {
   });
 
   factory PC.fromJson(Map<String, dynamic> json) {
-    final psuId = json['powerSupplyId'] ?? json['psuId'];
-
     return PC(
       id: (json['id'] as num).toInt(),
       price: (json['price'] as num).toInt(),
@@ -79,7 +79,7 @@ class PC {
       processorId: (json['processorId'] as num).toInt(),
       caseId: (json['caseId'] as num).toInt(),
       motherBoardId: (json['motherBoardId'] as num).toInt(),
-      powerSupplyId: (psuId as num).toInt(),
+      powerSupplyId: (json['powerSupplyId'] as num).toInt(),
       ramId: (json['ramId'] as num).toInt(),
       graphicsCardId: (json['graphicsCardId'] as num).toInt(),
       available: json['available'] as bool,
@@ -87,6 +87,7 @@ class PC {
       pcType: json['pcType'] != null ? PcType.fromJson(json['pcType']) : null,
       picture: json['picture'] as String?,
       rating: (json['rating'] as num?)?.toInt(),
+      ratingCount: (json['ratingCount'] as num?)?.toInt(),
       stateMachine: json['stateMachine'] as String?,
       graphicsCard: GraphicsCard.fromJson(
         (json['graphicsCard']) as Map<String, dynamic>,

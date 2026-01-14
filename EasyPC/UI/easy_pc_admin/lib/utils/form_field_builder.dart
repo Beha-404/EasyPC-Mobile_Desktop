@@ -88,6 +88,7 @@ class CustomFormFieldBuilder {
       'motherBoardId',
       'powerSupplyId',
       'caseId',
+      'pcTypeId',
     ];
     return pcComponentFields.contains(fieldKey);
   }

@@ -6,6 +6,7 @@ import 'package:desktop/services/graphics_card_service.dart';
 import 'package:desktop/services/ram_service.dart';
 import 'package:desktop/services/power_supply_service.dart';
 import 'package:desktop/services/case_service.dart';
+import 'package:desktop/services/pc_type_service.dart';
 import 'package:desktop/utils/form_field_builder.dart';
 import 'package:flutter/material.dart';
 
@@ -71,6 +72,7 @@ class _UpdateFormPanelState extends State<UpdateFormPanel> {
     final motherboards = await MotherboardService().get();
     final powerSupplies = await PowerSupplyService().get();
     final cases = await CaseService().get();
+    final pcTypes = await PcTypeService().get();
 
     _pcComponents = {
       'processorId': processors.map((e) => e.toMap()).toList(),
@@ -79,6 +81,7 @@ class _UpdateFormPanelState extends State<UpdateFormPanel> {
       'motherBoardId': motherboards.map((e) => e.toMap()).toList(),
       'powerSupplyId': powerSupplies.map((e) => e.toMap()).toList(),
       'caseId': cases.map((e) => e.toMap()).toList(),
+      'pcTypeId': pcTypes.map((e) => e.toMap()).toList(),
     };
   }
 

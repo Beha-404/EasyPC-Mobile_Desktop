@@ -188,7 +188,7 @@ class PcDetailsDialog {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '(${pc.rating ?? 0}/5)',
+                      '(${pc.ratingCount ?? 0} ${(pc.ratingCount ?? 0) == 1 ? 'review' : 'reviews'})',
                       style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 16,

@@ -71,7 +71,6 @@ class PC {
   });
 
   factory PC.fromJson(Map<String, dynamic> json) {
-    final psuId = json['powerSupplyId'] ?? json['psuId'];
     try{
     return PC(
       id: (json['id'] as num).toInt(),
@@ -80,7 +79,7 @@ class PC {
       processorId: (json['processorId'] as num?)?.toInt() ?? 0,
       caseId: (json['caseId'] as num?)?.toInt() ?? 0,
       motherBoardId: (json['motherBoardId'] as num?)?.toInt() ?? 0,
-      powerSupplyId: (psuId as num?)?.toInt() ?? 0,
+      powerSupplyId: (json['powerSupplyId'] as num?)?.toInt() ?? 0,
       ramId: (json['ramId'] as num?)?.toInt() ?? 0,
       graphicsCardId: (json['graphicsCardId'] as num?)?.toInt() ?? 0,
       available: json['available'] as bool? ?? true,

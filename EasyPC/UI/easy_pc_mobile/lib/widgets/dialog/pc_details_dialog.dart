@@ -125,6 +125,21 @@ class _PcDetailsContentState extends State<_PcDetailsContent> {
     }
   }
 
+  Future<void> _refreshPcData() async {
+    if (_currentPc?.id == null) return;
+
+    try {
+      final updatedPc = await PcService().getById(_currentPc!.id!);
+      if (updatedPc != null && mounted) {
+        setState(() {
+          _currentPc = updatedPc;
+        });
+        await _checkIfUserHasRated();
+      }
+    } catch (e) {
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -398,36 +413,37 @@ class _PcDetailsContentState extends State<_PcDetailsContent> {
           ),
           if (_currentPc!.averageRating != null || widget.showRateButton) ...[
             const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Flexible(
-                  child: Row(
-                    children: [
-                      ...List.generate(
-                        5,
-                        (index) => Icon(
-                          index < (_currentPc!.averageRating ?? 0)
-                              ? Icons.star
-                              : Icons.star_border,
-                          color: Colors.amber,
-                          size: 18,
-                        ),
+                Row(
+                  children: [
+                    ...List.generate(
+                      5,
+                      (index) => Icon(
+                        index < (_currentPc!.averageRating ?? 0)
+                            ? Icons.star
+                            : Icons.star_border,
+                        color: Colors.amber,
+                        size: 18,
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '(${_currentPc!.averageRating ?? 0}/5)',
+                    ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        '(${_currentPc!.ratingCount ?? 0} ${(_currentPc!.ratingCount ?? 0) == 1 ? 'review' : 'reviews'})',
                         style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 13,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                if (widget.showRateButton && !_checkingRating)
-                  Flexible(
+                if (widget.showRateButton && !_checkingRating) ...[
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: () async {
                         await RatePcDialog.show(
@@ -437,6 +453,8 @@ class _PcDetailsContentState extends State<_PcDetailsContent> {
                           existingRatingValue: _existingRatingValue,
                         );
                         if (mounted) {
+                          // Refresh PC data to get updated rating
+                          await _refreshPcData();
                           Navigator.pop(context);
                           widget.onRatingSubmitted?.call();
                         }
@@ -467,6 +485,7 @@ class _PcDetailsContentState extends State<_PcDetailsContent> {
                       ),
                     ),
                   ),
+                ],
               ],
             ),
           ],

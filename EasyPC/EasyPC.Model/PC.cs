@@ -30,7 +30,7 @@ public class PC
 
     public int MotherBoardId { get; set; }
 
-    public int PsuId { get; set; }
+    public int PowerSupplyId { get; set; }
 
     public int GraphicsCardId { get; set; }
 
