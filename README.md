@@ -4,6 +4,9 @@
 EasyPC je napredna multi-platformska aplikacija za sastavljanje i kupovinu računara sa inteligentnim sistemom za provjeru kompatibilnosti i korak-po-korak vodičem za konfiguraciju računara.
 
 **Pristupni podaci:**
+
+--Sifra zip file-a od BUILD-a je "fit"
+
 - Desktop aplikacija: `desktop` / `test` ili 
 `superadmin` / `superadmin123` ako zelimo imati dodatne funkcije
 
